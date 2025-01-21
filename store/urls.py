@@ -13,5 +13,7 @@ urlpatterns = [
     path('area/<int:pk>/', AreaRetrieveUpdateDestroyAPIView.as_view(), name='area-detail'),  
     path('route/', RouteListCreateAPIView.as_view(), name='route-list-create'),
     path('route/<int:pk>/', RouteRetrieveUpdateDestroyAPIView.as_view(), name='route-detail'),
+    path('godown/', GodownListCreateAPIView.as_view(), name='godown'),
+    path('godown/<int:pk>/', GodownListRetrieveUpdateDestroyAPIView.as_view(), name='godown-detail')   
     
 ]

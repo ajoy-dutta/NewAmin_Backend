@@ -2,7 +2,6 @@ from django.db import models
 
 class Division(models.Model):
     name = models.CharField(max_length=100)
-    parent = models.ForeignKey('self', null=True, blank=True, related_name='subdivisions', on_delete=models.CASCADE)  # Division can have no parent
 
     def __str__(self):
         return self.name
@@ -39,3 +38,12 @@ class Area(models.Model):
     def __str__(self):
         return self.name
 
+
+
+class GodownList(models.Model):
+    shop_name = models.CharField(max_length=255, null= True, blank=True)
+    godown_name = models.CharField(max_length=255, null= True, blank=True)
+    godown_address = models.TextField(max_length=255,null= True, blank=True)
+
+    def __str__(self):
+        return f"{self.shop_name} - {self.godown_name}"

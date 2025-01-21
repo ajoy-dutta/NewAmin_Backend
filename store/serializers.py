@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Division, District, Thana, Route, Area
+from .models import Division, District, Thana, Route, Area, GodownList
 
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,3 +37,9 @@ class DivisionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Division
         fields = ['id', 'name', 'districts']
+
+
+class GodownListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GodownList
+        fields = '__all__' 

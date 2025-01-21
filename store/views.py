@@ -95,3 +95,12 @@ class RouteRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     
+
+class GodownListCreateAPIView(ListCreateAPIView):
+    queryset = GodownList.objects.all()
+    serializer_class = GodownListSerializer 
+    
+class GodownListRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = GodownList.objects.all()
+    serializer_class = GodownListSerializer
+    
