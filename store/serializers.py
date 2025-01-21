@@ -8,7 +8,7 @@ class AreaSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
-    areas = AreaSerializer(many=True)
+    areas = AreaSerializer(many=True, read_only=True)
 
     class Meta:
         model = Route
@@ -16,7 +16,7 @@ class RouteSerializer(serializers.ModelSerializer):
 
 
 class ThanaSerializer(serializers.ModelSerializer):
-    routes = RouteSerializer(many=True)
+    routes = RouteSerializer(many=True, read_only=True)
 
     class Meta:
         model = Thana
@@ -24,7 +24,7 @@ class ThanaSerializer(serializers.ModelSerializer):
 
 
 class DistrictSerializer(serializers.ModelSerializer):
-    thanas = ThanaSerializer(many=True)
+    thanas = ThanaSerializer(many=True, read_only=True)
 
     class Meta:
         model = District
@@ -32,7 +32,7 @@ class DistrictSerializer(serializers.ModelSerializer):
 
 
 class DivisionSerializer(serializers.ModelSerializer):
-    districts = DistrictSerializer(many=True)
+    districts = DistrictSerializer(many=True, read_only=True)
 
     class Meta:
         model = Division
