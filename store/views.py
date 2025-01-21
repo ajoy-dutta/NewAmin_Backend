@@ -34,32 +34,6 @@ class LoginAPIView(APIView):
         
 
 
-
-# class LoginAPIView(APIView):
-#     def post(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-
-#         if not username or not password:
-#             return Response({"detail": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
-
-#         # Authenticate the user
-#         user = authenticate(username=username, password=password)
-
-#         if user is not None:
-#             # Create a JWT token for the user
-#             refresh = RefreshToken.for_user(user)
-#             access_token = str(refresh.access_token)
-
-#             return Response({
-#                 'access': access_token,
-#                 'refresh': str(refresh),
-#             })
-
-#         return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-
 # List and Create View for Divisions
 class DivisionListCreateAPIView(ListCreateAPIView):
     queryset = Division.objects.all()
