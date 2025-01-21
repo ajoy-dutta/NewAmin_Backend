@@ -47,3 +47,20 @@ class GodownList(models.Model):
 
     def __str__(self):
         return f"{self.shop_name} - {self.godown_name}"
+
+
+
+class ShopBankInfo(models.Model):
+    shop_name = models.CharField(max_length=255)
+    bank_name = models.CharField(max_length=255)
+    bank_address = models.TextField()
+
+    def __str__(self):
+        return self.shop_name
+
+
+class BankMethod(models.Model):
+    payment_method = models.CharField(max_length=255, verbose_name="পেমেন্ট মেথড")
+
+    def __str__(self):
+        return self.payment_method

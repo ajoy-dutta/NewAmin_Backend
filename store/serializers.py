@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Division, District, Thana, Route, Area, GodownList
+from .models import *
 
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,3 +43,15 @@ class GodownListSerializer(serializers.ModelSerializer):
     class Meta:
         model = GodownList
         fields = '__all__' 
+        
+        
+class ShopBankInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShopBankInfo
+        fields = ['id', 'shop_name', 'bank_name', 'bank_address']
+        
+        
+class BankMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankMethod
+        fields = ['id', 'payment_method']

@@ -14,6 +14,10 @@ urlpatterns = [
     path('route/', RouteListCreateAPIView.as_view(), name='route-list-create'),
     path('route/<int:pk>/', RouteRetrieveUpdateDestroyAPIView.as_view(), name='route-detail'),
     path('godown/', GodownListCreateAPIView.as_view(), name='godown'),
-    path('godown/<int:pk>/', GodownListRetrieveUpdateDestroyAPIView.as_view(), name='godown-detail')   
+    path('godown/<int:pk>/', GodownListRetrieveUpdateDestroyAPIView.as_view(), name='godown-detail') ,
+    path('bank_info/', ShopBankInfoListCreateView.as_view(), name='bank_info_list_create'),
+    path('bank_info/<int:pk>/', ShopBankInfoDetailView.as_view(), name='bank_info_detail'),  
+    path('payment_method/', BankMethodListCreateView.as_view(), name='bank_method_list_create'),
+    path('payment_method/<int:pk>/', BankMethodDetailView.as_view(), name='bank_method_detail'),
     
 ]

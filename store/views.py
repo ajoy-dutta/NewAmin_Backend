@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
+from rest_framework import generics
 
 
 class LoginAPIView(APIView):
@@ -103,4 +104,23 @@ class GodownListCreateAPIView(ListCreateAPIView):
 class GodownListRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = GodownList.objects.all()
     serializer_class = GodownListSerializer
+    
+    
+class ShopBankInfoListCreateView(generics.ListCreateAPIView):
+    queryset = ShopBankInfo.objects.all()
+    serializer_class = ShopBankInfoSerializer
+
+
+class ShopBankInfoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ShopBankInfo.objects.all()
+    serializer_class = ShopBankInfoSerializer
+    
+class BankMethodListCreateView(generics.ListCreateAPIView):
+    queryset = BankMethod.objects.all()
+    serializer_class = BankMethodSerializer
+
+
+class BankMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BankMethod.objects.all()
+    serializer_class = BankMethodSerializer
     

@@ -7,6 +7,9 @@ admin.site.register(District)
 admin.site.register(Thana)
 admin.site.register(Route)
 admin.site.register(Area)
+admin.site.register(GodownList)
+admin.site.register(ShopBankInfo)
+admin.site.register(BankMethod)
 
 
 
