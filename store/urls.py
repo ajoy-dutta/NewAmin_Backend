@@ -19,5 +19,7 @@ urlpatterns = [
     path('bank_info/<int:pk>/', ShopBankInfoDetailView.as_view(), name='bank_info_detail'),  
     path('payment_method/', BankMethodListCreateView.as_view(), name='bank_method_list_create'),
     path('payment_method/<int:pk>/', BankMethodDetailView.as_view(), name='bank_method_detail'),
+    path('cost_method/', CostMethodListCreateView.as_view(), name='cost_method_list_create'),
+    path('cost_method/<int:pk>/', CostMethodDetailView.as_view(), name='cost_method_detail'),
     
 ]

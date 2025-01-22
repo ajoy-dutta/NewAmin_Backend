@@ -124,3 +124,11 @@ class BankMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = BankMethod.objects.all()
     serializer_class = BankMethodSerializer
     
+class CostMethodListCreateView(generics.ListCreateAPIView):
+    queryset = Cost.objects.all()
+    serializer_class = CostMethodSerializer
+
+
+class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Cost.objects.all()
+    serializer_class = CostMethodSerializer

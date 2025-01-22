@@ -28,7 +28,7 @@ class DistrictSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = District
-        fields = ['id', 'name', 'thanas']
+        fields = ['id', 'name', 'thanas','parent']
 
 
 class DivisionSerializer(serializers.ModelSerializer):
@@ -55,3 +55,9 @@ class BankMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankMethod
         fields = ['id', 'payment_method']
+     
+        
+class CostMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cost
+        fields = ['id', 'name']

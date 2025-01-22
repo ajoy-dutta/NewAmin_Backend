@@ -64,3 +64,10 @@ class BankMethod(models.Model):
 
     def __str__(self):
         return self.payment_method
+    
+    
+class Cost(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    
+    def __str__(self):
+        return self.name
