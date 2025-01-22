@@ -4,7 +4,7 @@ from .models import *
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Area
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'parent']
 
 
 class RouteSerializer(serializers.ModelSerializer):
@@ -12,7 +12,7 @@ class RouteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Route
-        fields = ['id', 'name', 'areas']
+        fields = ['id', 'name', 'areas', 'parent']
 
 
 class ThanaSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class ThanaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thana
-        fields = ['id', 'name', 'routes']
+        fields = ['id', 'name', 'routes', 'parent']
 
 
 class DistrictSerializer(serializers.ModelSerializer):
