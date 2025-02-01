@@ -10,6 +10,9 @@ admin.site.register(Area)
 admin.site.register(GodownList)
 admin.site.register(ShopBankInfo)
 admin.site.register(BankMethod)
-
+admin.site.register(Employee)
+admin.site.register(Education)
+admin.site.register(BankingDetails)
+admin.site.register(Experience)
 
 

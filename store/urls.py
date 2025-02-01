@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import *
 
+
 urlpatterns = [
     path('login/', LoginAPIView.as_view(), name='login'),
     path('divisions/', DivisionListCreateAPIView.as_view(), name='division-list-create'),
@@ -22,4 +23,7 @@ urlpatterns = [
     path('cost_method/', CostMethodListCreateView.as_view(), name='cost_method_list_create'),
     path('cost_method/<int:pk>/', CostMethodDetailView.as_view(), name='cost_method_detail'),
     
+    # Employee endpoints
+    path('employees/', EmployeeListCreateView.as_view(), name='employee-list-create'),
+    path('employees/<int:pk>/', EmployeeRetrieveUpdateDestroyView.as_view(), name='employee-detail'),
 ]
