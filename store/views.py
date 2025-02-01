@@ -132,3 +132,4 @@ class CostMethodListCreateView(generics.ListCreateAPIView):
 class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Cost.objects.all()
     serializer_class = CostMethodSerializer
+
