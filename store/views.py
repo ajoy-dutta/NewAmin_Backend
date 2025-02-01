@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
 
 class LoginAPIView(APIView):
@@ -132,3 +134,17 @@ class CostMethodListCreateView(generics.ListCreateAPIView):
 class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Cost.objects.all()
     serializer_class = CostMethodSerializer
+    
+    
+# Employee Personal Info     
+class EmployeeListCreateView(generics.ListCreateAPIView):
+    queryset = Employee.objects.all().prefetch_related('education', 'experiences', 'banking_details')
+    serializer_class = EmployeeSerializer
+
+
+class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+    
+    
+    
