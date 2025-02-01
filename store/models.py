@@ -38,8 +38,6 @@ class Area(models.Model):
     def __str__(self):
         return self.name
 
-
-
 class GodownList(models.Model):
     shop_name = models.CharField(max_length=255, null= True, blank=True)
     godown_name = models.CharField(max_length=255, null= True, blank=True)
