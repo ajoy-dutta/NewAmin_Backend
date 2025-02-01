@@ -3,7 +3,6 @@ from .models import*
 from store.models import ShopBankInfo  # Import ShopBankInfo from the store app
 
 class Mohajon(models.Model):
-    # Personal Information
     name = models.CharField(max_length=255)
     code = models.AutoField(primary_key=True)
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'),('চাষী','চাষী')])  # Updated field
@@ -56,7 +55,6 @@ class Mohajon(models.Model):
         return self.name
 
 
-# Bank Account Information
 class BankInfo(models.Model):
     user = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="banking_details")
     bank_name = models.CharField(max_length=255, blank=True, null=True)

@@ -7,13 +7,11 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 
 
-# ListCreate API view for Mohajon model (GET and POST)
 class MohajonListCreateAPIView(generics.ListCreateAPIView):
     queryset = Mohajon.objects.all()
     serializer_class = MohajonSerializer
 
 
-# DestroyUpdate API view for Mohajon model (DELETE and PUT)
 class MohajonDestroyUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Mohajon.objects.all()
     serializer_class = MohajonSerializer
