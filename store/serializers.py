@@ -89,10 +89,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = [
-            "id", "full_name", "user_type", "user_code", "email", 
-            "mobile_1", "password", "education", "experiences", "banking_details"
-        ]
+        fields = '__all__'
 
     def create(self, validated_data):
         education_data = validated_data.pop('education', [])
