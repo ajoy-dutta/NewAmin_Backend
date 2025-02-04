@@ -5,7 +5,7 @@ from store.models import ShopBankInfo  # Import ShopBankInfo from the store app
 class Mohajon(models.Model):
     name = models.CharField(max_length=255)
     code = models.AutoField(primary_key=True)
-    business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'),('চাষী','চাষী')])  # Updated field
+    business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'),('বেপারী/চাষী','বেপারী/চাষী')]) 
     father_name = models.CharField(max_length=255, blank=True, null=True)
     shop_name = models.CharField(max_length=255, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
