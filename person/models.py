@@ -57,7 +57,7 @@ class Mohajon(models.Model):
                 if last_code:
                     # Increment the last code number
                     last_number = int(last_code.code[3:])  # Extract the number part after 'NAS'
-                    self.code = f"NAS{last_number + 1:05}"  # Set new code as NAS{incremented_number}
+                    self.code = f"N{last_number + 1:05}"  # Set new code as NAS{incremented_number}
                 else:
                     self.code = "N00001"  # First code if no entries in the table
 
@@ -125,7 +125,7 @@ class Customer(models.Model):
                 if last_code:
                     # Increment the last code number
                     last_number = int(last_code.code[3:])  # Extract the number part after 'NAS'
-                    self.code = f"NAS{last_number + 1:05}"  # Set new code as NAS{incremented_number}
+                    self.code = f"N{last_number + 1:05}"  # Set new code as NAS{incremented_number}
                 else:
                     self.code = "N00001"  # First code if no entries in the table
 
