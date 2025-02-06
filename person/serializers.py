@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Mohajon, BankInfo
+from .models import*
 from store.serializers import ShopBankInfoSerializer  
 
 class BankInfoSerializer(serializers.ModelSerializer):
@@ -44,3 +44,8 @@ class MohajonSerializer(serializers.ModelSerializer):
             ]
             BankInfo.objects.bulk_create(bank_info_instances) 
         return instance
+
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Customer
+        fields='__all__'
