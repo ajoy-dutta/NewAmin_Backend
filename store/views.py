@@ -147,3 +147,22 @@ class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EmployeeSerializer
     
     
+# Product Views
+class ProductListCreateView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+# Product Type Views
+class ProductTypeListCreateView(generics.ListCreateAPIView):
+    queryset = ProductType.objects.all()
+    serializer_class = ProductTypeSerializer
+
+class ProductTypeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ProductType.objects.all()
+    serializer_class = ProductTypeSerializer
+    
+    
