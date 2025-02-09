@@ -92,25 +92,27 @@ class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = '__all__'
+        
+        
+    # def to_internal_value(self, data):
+    #     data = data.copy()
+
+    #     banking_details = data.get("banking_details")
+    #     if isinstance(banking_details, str):
+    #         try:
+    #             data["banking_details"] = json.loads(banking_details)
+    #             print(data["banking_details"])
+    #         except json.JSONDecodeError:
+    #             raise serializers.ValidationError({"banking_details": "Invalid JSON format"})
+
+    #     return super().to_internal_value(data)
+    
 
     def create(self, validated_data):
-        education_data = validated_data.pop('education', [])
-        experience_data = validated_data.pop('experiences', [])
-        banking_details_data = validated_data.pop('banking_details', [])
-         
+        
+        print(validated_data)
 
         employee = Employee.objects.create(**validated_data)
-        print(employee)
-
-        for edu_data in education_data:
-            Education.objects.create(user=employee, **edu_data) 
-            
-        for exp_data in experience_data:
-            Experience.objects.create(user=employee, **exp_data) 
-
-        for bank_data in banking_details_data:
-            BankingDetails.objects.create(user=employee, **bank_data) 
-
         return employee
 
     def update(self, instance, validated_data):
