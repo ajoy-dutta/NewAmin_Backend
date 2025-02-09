@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Division(models.Model):
     name = models.CharField(max_length=100)
 
@@ -37,8 +38,6 @@ class Area(models.Model):
 
     def __str__(self):
         return self.name
-
-
 
 class GodownList(models.Model):
     shop_name = models.CharField(max_length=255, null= True, blank=True)
@@ -131,8 +130,8 @@ class Employee(models.Model):
     father_mobile = models.CharField(max_length=15, blank=True, null=True)
     mother_mobile = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    image = models.ImageField(default = "Employee_image", blank=True, null=True)
-    nid_image = models.ImageField(default = "NID_image", blank=True, null=True)
+    image = models.ImageField(default = "Employee_image",upload_to='image/', blank=True, null=True)
+    nid_image = models.ImageField(default = "NID_image",upload_to='image/', blank=True, null=True)
     password = models.CharField(max_length=10, blank=True, null= True)
     is_active = models.BooleanField(default= False, blank=True, null = True)
     
@@ -168,7 +167,7 @@ class Employee(models.Model):
             else:
                 new_user_id = 1
 
-            self.user_code = f"NAS{new_user_id:05}"
+            self.user_code = f"N{new_user_id:05}"
 
         super(Employee, self).save(*args, **kwargs) 
 

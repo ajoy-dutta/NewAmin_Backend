@@ -147,4 +147,3 @@ class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EmployeeSerializer
     
     
-    
