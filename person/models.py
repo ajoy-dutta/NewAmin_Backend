@@ -4,7 +4,7 @@ from store.models import ShopBankInfo  # Import ShopBankInfo from the store app
 
 class Mohajon(models.Model):
     name = models.CharField(max_length=255)
-    code = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=10, unique=True,blank=True)  # Ensure this is a CharField, not AutoField
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'),('বেপারী/চাষী','বেপারী/চাষী')]) 
     father_name = models.CharField(max_length=255, blank=True, null=True)
     shop_name = models.CharField(max_length=255, blank=True, null=True)
@@ -50,9 +50,18 @@ class Mohajon(models.Model):
 
 
 
-        
-    def __str__(self):
-        return self.name
+    def save(self, *args, **kwargs):
+            if not self.code:  # If no code is set
+                # Get the last code in the database, or default to 'NAS0' if none exist
+                last_code = Mohajon.objects.order_by('code').last()
+                if last_code:
+                    # Increment the last code number
+                    last_number = int(last_code.code[3:])  # Extract the number part after 'NAS'
+                    self.code = f"N{last_number + 1:05}"  # Set new code as NAS{incremented_number}
+                else:
+                    self.code = "N00001"  # First code if no entries in the table
+
+            super().save(*args, **kwargs)
 
 
 class BankInfo(models.Model):
@@ -65,7 +74,7 @@ class BankInfo(models.Model):
 
 class Customer(models.Model):
     name = models.CharField(max_length=255)
-    code = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=10, unique=True,blank=True)  # Ensure this is a CharField, not AutoField
     business_type = models.CharField(max_length=255, choices=[('Retailer', 'Retailer'),('Whole Saler','Whole Saler')]) 
     father_name = models.CharField(max_length=255, blank=True, null=True)
     shop_name = models.CharField(max_length=255, blank=True, null=True)
@@ -108,3 +117,16 @@ class Customer(models.Model):
     # Previous Records
     previous_account = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     khatian_number = models.CharField(max_length=50, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+            if not self.code:  # If no code is set
+                # Get the last code in the database, or default to 'NAS0' if none exist
+                last_code = Customer.objects.order_by('code').last()
+                if last_code:
+                    # Increment the last code number
+                    last_number = int(last_code.code[3:])  # Extract the number part after 'NAS'
+                    self.code = f"N{last_number + 1:05}"  # Set new code as NAS{incremented_number}
+                else:
+                    self.code = "N00001"  # First code if no entries in the table
+
+            super().save(*args, **kwargs)
