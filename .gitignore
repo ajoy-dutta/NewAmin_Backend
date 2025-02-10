@@ -3,6 +3,7 @@
 *.pyo
 *.pyd
 __pycache__/
+migrations
 *.db
 *.sqlite3
 *.log
@@ -23,7 +24,7 @@ __pycache__/
 *.pyc
 *.pyo
 __pycache__/
-
+migrations
 
 
 # Virtualenv

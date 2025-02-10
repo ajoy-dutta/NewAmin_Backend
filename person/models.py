@@ -130,3 +130,5 @@ class Customer(models.Model):
                     self.code = "N00001"  # First code if no entries in the table
 
             super().save(*args, **kwargs)
+
+

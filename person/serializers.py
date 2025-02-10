@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import*
-from store.serializers import ShopBankInfoSerializer  
 
 class BankInfoSerializer(serializers.ModelSerializer):
     class Meta:

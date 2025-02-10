@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+import json
 
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,6 +87,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
     education = EducationSerializer(many=True, required=False)
     experiences = ExperienceSerializer(many=True, required=False)
     banking_details = BankingDetailsSerializer(many=True, required=False)
+    
 
     class Meta:
         model = Employee
@@ -95,6 +97,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         education_data = validated_data.pop('education', [])
         experience_data = validated_data.pop('experiences', [])
         banking_details_data = validated_data.pop('banking_details', [])
+         
 
         employee = Employee.objects.create(**validated_data)
         print(employee)
