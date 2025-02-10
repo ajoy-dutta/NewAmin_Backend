@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class LoginAPIView(APIView):
@@ -140,6 +141,54 @@ class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
 class EmployeeListCreateView(generics.ListCreateAPIView):
     queryset = Employee.objects.all().prefetch_related('education', 'experiences', 'banking_details')
     serializer_class = EmployeeSerializer
+    parser_classes = [MultiPartParser, FormParser]  
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy() 
+        
+        banking_details = data.get("banking_details")
+        if isinstance(banking_details, str):
+            try:
+                data["banking_details"] = json.loads(banking_details)
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid JSON format"}, status=400)
+            
+        education = data.get("education")
+        if isinstance(education, str):
+            try:
+                data["education"] = json.loads(education)
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid JSON format"}, status=400)
+            
+        experiences = data.get("experiences")
+        if isinstance(experiences, str):
+            try:
+                data["experiences"] = json.loads(experiences)
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid JSON format"}, status=400)
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer, data) 
+
+        return Response(serializer.data, status=201)
+
+    def perform_create(self, serializer, data):
+        
+        employee = serializer.save() 
+
+        banking_details_data = data.get('banking_details', [])
+        for bank_data in banking_details_data:
+            BankingDetails.objects.create(user=employee, **bank_data)
+            
+        education_data = data.get('education', [])
+        for education in education_data:
+            Education.objects.create(user=employee, **education)
+            
+        experiences_data = data.get('experiences', [])
+        for experience in experiences_data:
+            Experience.objects.create(user=employee, **experience)
+
 
 
 class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

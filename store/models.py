@@ -113,7 +113,7 @@ class Employee(models.Model):
     ]
     
     full_name = models.CharField(max_length=255)  # Required
-    user_code = models.CharField(max_length=50, unique=True)  # Required
+    user_code = models.CharField(max_length=50, unique=True,blank=True, null= True)  # Required
     user_type = models.CharField(max_length=50, choices=USER_TYPE_CHOICES)   # Required
     mobile_1 = models.CharField(max_length=15)  # Required
 
@@ -130,12 +130,10 @@ class Employee(models.Model):
     father_mobile = models.CharField(max_length=15, blank=True, null=True)
     mother_mobile = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    image = models.ImageField(default = "Employee_image", blank=True, null=True)
-    signature_image = models.ImageField(default = "Signature_image", blank=True, null=True)
-    nid_image = models.ImageField(default = "NID_image", blank=True, null=True)
-    certificate_image = models.ImageField(default = "Certificate_image", blank=True, null=True)
-    parent_image = models.ImageField(default = "Parent_image", blank=True, null=True)
-    password = models.CharField(max_length=10)
+    image = models.ImageField(default = "Employee_image",upload_to='image/', blank=True, null=True)
+    nid_image = models.ImageField(default = "NID_image",upload_to='image/', blank=True, null=True)
+    password = models.CharField(max_length=10, blank=True, null= True)
+    is_active = models.BooleanField(default= False, blank=True, null = True)
     
     # Current Address
     current_village = models.CharField(max_length=255, blank=True, null=True)
@@ -169,7 +167,7 @@ class Employee(models.Model):
             else:
                 new_user_id = 1
 
-            self.user_code = f"NAS{new_user_id:05}"
+            self.user_code = f"N{new_user_id:05}"
 
         super(Employee, self).save(*args, **kwargs) 
 

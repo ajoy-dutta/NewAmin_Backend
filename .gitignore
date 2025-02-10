@@ -3,6 +3,7 @@
 *.pyo
 *.pyd
 __pycache__/
+migrations
 *.db
 *.sqlite3
 *.log
@@ -15,8 +16,7 @@ __pycache__/
 
 # Ignore all migrations except for the initial migration
 */migrations/*
-!*/migrations/__init__.py
-!*/migrations/0001_initial.py
+
 
 
 # Django stuff:
@@ -25,7 +25,7 @@ __pycache__/
 *.pyc
 *.pyo
 __pycache__/
-
+migrations
 
 
 # Virtualenv
