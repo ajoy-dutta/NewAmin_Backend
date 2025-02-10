@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class LoginAPIView(APIView):
@@ -140,11 +141,75 @@ class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
 class EmployeeListCreateView(generics.ListCreateAPIView):
     queryset = Employee.objects.all().prefetch_related('education', 'experiences', 'banking_details')
     serializer_class = EmployeeSerializer
+    parser_classes = [MultiPartParser, FormParser]  
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy() 
+        
+        for field in ["banking_details", "education", "experiences"]:
+            if isinstance(data.get(field), str):
+                try:
+                    data[field] = json.loads(data[field])
+                except json.JSONDecodeError:
+                    return Response({f"error": f"Invalid JSON format for {field}"}, status=400)
+        
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer, data) 
+
+        return Response(serializer.data, status=201)
+
+    def perform_create(self, serializer, data):
+        
+        employee = serializer.save() 
+        
+        for field, model in [
+            ("banking_details", BankingDetails),
+            ("education", Education),
+            ("experiences", Experience),
+        ]:
+            related_data = data.get(field, [])
+            for item in related_data:
+                model.objects.create(user=employee, **item)
+
 
 
 class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+    
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        data = request.data.copy()
+
+        for field in ["banking_details", "education", "experiences"]:
+            if isinstance(data.get(field), str):
+                try:
+                    data[field] = json.loads(data[field])
+                except json.JSONDecodeError:
+                    return Response({f"error": f"Invalid JSON format for {field}"}, status=400)
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer, data)
+
+        return Response(serializer.data)
+
+    def perform_update(self, serializer, data):
+        employee = serializer.save()
+
+        for field, model in [
+            ("banking_details", BankingDetails),
+            ("education", Education),
+            ("experiences", Experience),
+        ]:
+            model.objects.filter(user=employee).delete()
+            related_data = data.get(field, [])
+            for item in related_data:
+                model.objects.create(user=employee, **item)
     
     
 # Product Views

@@ -133,7 +133,7 @@ class Employee(models.Model):
     image = models.ImageField(default = "Employee_image",upload_to='image/', blank=True, null=True)
     nid_image = models.ImageField(default = "NID_image",upload_to='image/', blank=True, null=True)
     password = models.CharField(max_length=10, blank=True, null= True)
-    is_active = models.BooleanField(default= False, blank=True, null = True)
+    is_active = models.IntegerField(default= 0, blank=True)
     
     # Current Address
     current_village = models.CharField(max_length=255, blank=True, null=True)
