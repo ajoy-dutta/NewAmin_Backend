@@ -94,20 +94,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
         
-    # def to_internal_value(self, data):
-    #     data = data.copy()
-
-    #     banking_details = data.get("banking_details")
-    #     if isinstance(banking_details, str):
-    #         try:
-    #             data["banking_details"] = json.loads(banking_details)
-    #             print(data["banking_details"])
-    #         except json.JSONDecodeError:
-    #             raise serializers.ValidationError({"banking_details": "Invalid JSON format"})
-
-    #     return super().to_internal_value(data)
-    
-
     def create(self, validated_data):
         
         print(validated_data)
@@ -116,30 +102,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
         return employee
 
     def update(self, instance, validated_data):
-        # Extract nested data
-        education_data = validated_data.pop('education', [])
-        experience_data = validated_data.pop('experiences', [])
-        banking_details_data = validated_data.pop('banking_details', [])
-
+       
         # Update Employee fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
-        # Update or create Education
-        instance.education.all().delete() 
-        for edu_data in education_data:
-            Education.objects.create(user=instance, **edu_data)
-
-        # Update or create Experience
-        instance.experiences.all().delete()  
-        for exp_data in experience_data:
-            Experience.objects.create(user=instance, **exp_data)
-
-        # Update or create BankingDetails
-        instance.banking_details.all().delete() 
-        for bank_data in banking_details_data:
-            BankingDetails.objects.create(user=instance, **bank_data)
 
         return instance
 

@@ -146,26 +146,13 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         data = request.data.copy() 
         
-        banking_details = data.get("banking_details")
-        if isinstance(banking_details, str):
-            try:
-                data["banking_details"] = json.loads(banking_details)
-            except json.JSONDecodeError:
-                return Response({"error": "Invalid JSON format"}, status=400)
-            
-        education = data.get("education")
-        if isinstance(education, str):
-            try:
-                data["education"] = json.loads(education)
-            except json.JSONDecodeError:
-                return Response({"error": "Invalid JSON format"}, status=400)
-            
-        experiences = data.get("experiences")
-        if isinstance(experiences, str):
-            try:
-                data["experiences"] = json.loads(experiences)
-            except json.JSONDecodeError:
-                return Response({"error": "Invalid JSON format"}, status=400)
+        for field in ["banking_details", "education", "experiences"]:
+            if isinstance(data.get(field), str):
+                try:
+                    data[field] = json.loads(data[field])
+                except json.JSONDecodeError:
+                    return Response({f"error": f"Invalid JSON format for {field}"}, status=400)
+        
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -176,24 +163,53 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer, data):
         
         employee = serializer.save() 
-
-        banking_details_data = data.get('banking_details', [])
-        for bank_data in banking_details_data:
-            BankingDetails.objects.create(user=employee, **bank_data)
-            
-        education_data = data.get('education', [])
-        for education in education_data:
-            Education.objects.create(user=employee, **education)
-            
-        experiences_data = data.get('experiences', [])
-        for experience in experiences_data:
-            Experience.objects.create(user=employee, **experience)
+        
+        for field, model in [
+            ("banking_details", BankingDetails),
+            ("education", Education),
+            ("experiences", Experience),
+        ]:
+            related_data = data.get(field, [])
+            for item in related_data:
+                model.objects.create(user=employee, **item)
 
 
 
 class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+    
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        data = request.data.copy()
+
+        for field in ["banking_details", "education", "experiences"]:
+            if isinstance(data.get(field), str):
+                try:
+                    data[field] = json.loads(data[field])
+                except json.JSONDecodeError:
+                    return Response({f"error": f"Invalid JSON format for {field}"}, status=400)
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer, data)
+
+        return Response(serializer.data)
+
+    def perform_update(self, serializer, data):
+        employee = serializer.save()
+
+        for field, model in [
+            ("banking_details", BankingDetails),
+            ("education", Education),
+            ("experiences", Experience),
+        ]:
+            model.objects.filter(user=employee).delete()
+            related_data = data.get(field, [])
+            for item in related_data:
+                model.objects.create(user=employee, **item)
     
     
 # Product Views
