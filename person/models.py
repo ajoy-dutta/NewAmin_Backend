@@ -48,8 +48,8 @@ class Mohajon(models.Model):
     previous_account = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     khatian_number = models.CharField(max_length=50, blank=True, null=True)
 
-
-
+        
+        
     def save(self, *args, **kwargs):
             if not self.code:  # If no code is set
                 # Get the last code in the database, or default to 'NAS0' if none exist
@@ -61,7 +61,7 @@ class Mohajon(models.Model):
                 else:
                     self.code = "N00001"  # First code if no entries in the table
 
-            super().save(*args, **kwargs)
+
 
 
 class BankInfo(models.Model):
