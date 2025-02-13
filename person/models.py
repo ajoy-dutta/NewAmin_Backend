@@ -48,20 +48,20 @@ class Mohajon(models.Model):
     previous_account = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     khatian_number = models.CharField(max_length=50, blank=True, null=True)
 
-
-
+        
+        
     def save(self, *args, **kwargs):
-            if not self.code:  # If no code is set
-                # Get the last code in the database, or default to 'NAS0' if none exist
-                last_code = Mohajon.objects.order_by('code').last()
-                if last_code:
-                    # Increment the last code number
-                    last_number = int(last_code.code[3:])  # Extract the number part after 'NAS'
-                    self.code = f"N{last_number + 1:05}"  # Set new code as NAS{incremented_number}
-                else:
-                    self.code = "N00001"  # First code if no entries in the table
+        if not self.code:  # If no code is set
+            # Get the last code in the database, or default to 'N00001' if none exist
+            last_code = Mohajon.objects.order_by('code').last()
+            if last_code:
+                last_number = int(last_code.code[1:])  # Extract numeric part after 'N'
+                self.code = f"N{last_number + 1:05}"  # Format new code correctly with 5 digits
+            else:
+                self.code = "N00001"  # First code if no entries exist
 
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
 
 
 class BankInfo(models.Model):

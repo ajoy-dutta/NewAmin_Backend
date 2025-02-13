@@ -59,3 +59,48 @@ class PurchaseSerializer(serializers.ModelSerializer):
             PurchaseDetail.objects.create(purchase=purchase, **purchase_data)
         
         return purchase
+
+
+
+class ProductSellInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductSellInfo
+        fields = '__all__'
+        
+        
+class CostInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CostInfo
+        fields = '__all__'
+        
+        
+class IncomeInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncomeInfo
+        fields = '__all__'
+        
+        
+class SellSerialzer(serializers.ModelSerializer):
+    Product_sell_info = ProductSellInfoSerializer(many = True, required = False)
+    Cost_info = CostInfoSerializer(many = True, required = False)
+    Income_info = IncomeInfoSerializer(many = True, required = False)
+    
+    
+    class Meta:
+        model = Sell
+        fields = '__all__'
+        
+    def create(self, validate_data):
+        print(validate_data)
+        
+        sell = Sell.objects.create( **validate_data )
+        return sell
+    
+    def update(self, instance, validate_data):
+        
+        # Update Employee fields
+        for attr, value in validate_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+            
+        return instance

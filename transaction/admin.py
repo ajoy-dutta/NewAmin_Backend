@@ -6,4 +6,8 @@ from .models import*
 admin.site.register(Purchase)
 admin.site.register(PurchaseDetail)
 admin.site.register(TransactionDetail)
+admin.site.register(Sell)
+admin.site.register(ProductSellInfo)
+admin.site.register(CostInfo)
+admin.site.register(IncomeInfo)
 
