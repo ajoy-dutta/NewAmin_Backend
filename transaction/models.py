@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Sum
 from django.utils.timezone import now
 from .models import*
-from person.models import Mohajon
+from person.models import Mohajon,Customer
 from store.models import Product, ProductType, GodownList, ShopBankInfo, BankMethod
 
 
@@ -91,7 +91,7 @@ class TransactionDetail(models.Model):
 class Sell(models.Model):
     date = models.DateField()
     receipt_no = models.CharField(max_length=50, unique=True, blank = True)
-    buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="sell")
+    buyer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="sell")
     
     
     def save(self, *args, **kwargs):

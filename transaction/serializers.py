@@ -84,11 +84,12 @@ class SellSerialzer(serializers.ModelSerializer):
     Product_sell_info = ProductSellInfoSerializer(many = True, required = False)
     Cost_info = CostInfoSerializer(many = True, required = False)
     Income_info = IncomeInfoSerializer(many = True, required = False)
+    buyer_name = serializers.CharField(source='buyer.name', read_only=True)
     
     
     class Meta:
         model = Sell
-        fields = '__all__'
+        fields = ['id', 'date', 'receipt_no','buyer','buyer_name','Product_sell_info', 'Cost_info', 'Income_info'] 
         
     def create(self, validate_data):
         print(validate_data)
