@@ -15,33 +15,15 @@ class MohajonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        banking_details_data = validated_data.pop('banking_details', None)  
-        mohajon_instance = Mohajon.objects.create(**validated_data) 
+        mohajon = Mohajon.objects.create(**validated_data)
+        return mohajon
 
-        if banking_details_data:
-            bank_info_instances = [
-                BankInfo(user=mohajon_instance, **bank_data)
-                for bank_data in banking_details_data
-            ]
-            BankInfo.objects.bulk_create(bank_info_instances)  
-
-        return mohajon_instance
 
     def update(self, instance, validated_data):
-        banking_details_data = validated_data.pop('banking_details', None)
-        
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        
         instance.save()
 
-        if banking_details_data is not None:
-            instance.banking_details.all().delete()
-            bank_info_instances = [
-                BankInfo(user=instance, **bank_data)
-                for bank_data in banking_details_data
-            ]
-            BankInfo.objects.bulk_create(bank_info_instances) 
         return instance
 
 class CustomerSerializer(serializers.ModelSerializer):
