@@ -51,16 +51,16 @@ class Mohajon(models.Model):
         
         
     def save(self, *args, **kwargs):
-        if not self.code:  # If no code is set
-            # Get the last code in the database, or default to 'N00001' if none exist
-            last_code = Mohajon.objects.order_by('code').last()
-            if last_code:
-                last_number = int(last_code.code[1:])  # Extract numeric part after 'N'
-                self.code = f"N{last_number + 1:05}"  # Format new code correctly with 5 digits
-            else:
-                self.code = "N00001"  # First code if no entries exist
+            if not self.code:  # If no code is set
+                # Get the last code in the database, or default to 'NAS0' if none exist
+                last_code = Mohajon.objects.order_by('code').last()
+                if last_code:
+                    # Increment the last code number
+                    last_number = int(last_code.code[1:])  # Extract the number part after 'NAS'
+                    self.code = f"N{last_number + 1:05}"  # Set new code as NAS{incremented_number}
+                else:
+                    self.code = "N00001"  # First code if no entries in the table
 
-        super().save(*args, **kwargs)
 
 
 
@@ -124,7 +124,7 @@ class Customer(models.Model):
                 last_code = Customer.objects.order_by('code').last()
                 if last_code:
                     # Increment the last code number
-                    last_number = int(last_code.code[3:])  # Extract the number part after 'NAS'
+                    last_number = int(last_code.code[1:])  # Extract the number part after 'NAS'
                     self.code = f"N{last_number + 1:05}"  # Set new code as NAS{incremented_number}
                 else:
                     self.code = "N00001"  # First code if no entries in the table
