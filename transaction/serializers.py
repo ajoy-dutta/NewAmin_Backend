@@ -45,20 +45,20 @@ class PurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Purchase
         fields = '__all__'
-    
+
     def create(self, validated_data):
-        transaction_details_data = validated_data.pop('transaction_details')
-        purchase_details_data = validated_data.pop('purchase_details')
-        
+
         purchase = Purchase.objects.create(**validated_data)
-        
-        for transaction_data in transaction_details_data:
-            TransactionDetail.objects.create(purchase=purchase, **transaction_data)
-        
-        for purchase_data in purchase_details_data:
-            PurchaseDetail.objects.create(purchase=purchase, **purchase_data)
-        
         return purchase
+
+    def update(self, instance, validated_data):
+       
+        # Update Employee fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        return instance
 
 
 
@@ -80,7 +80,7 @@ class IncomeInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
         
-class SellSerialzer(serializers.ModelSerializer):
+class SellSerializer(serializers.ModelSerializer):
     Product_sell_info = ProductSellInfoSerializer(many = True, required = False)
     Cost_info = CostInfoSerializer(many = True, required = False)
     Income_info = IncomeInfoSerializer(many = True, required = False)

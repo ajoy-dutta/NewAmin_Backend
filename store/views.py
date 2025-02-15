@@ -137,7 +137,6 @@ class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CostMethodSerializer
     
     
-# Employee Personal Info     
 class EmployeeListCreateView(generics.ListCreateAPIView):
     queryset = Employee.objects.all().prefetch_related('education', 'experiences', 'banking_details')
     serializer_class = EmployeeSerializer

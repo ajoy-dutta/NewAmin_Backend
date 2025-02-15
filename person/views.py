@@ -38,7 +38,7 @@ class MohajonListCreateAPIView(generics.ListCreateAPIView):
            ]:
           related_data = data.get(field, [])
           for item in related_data:
-            model.objects.create(user=instance, **item)
+            model.objects.create(mohajon=instance, **item)
 
 
 
