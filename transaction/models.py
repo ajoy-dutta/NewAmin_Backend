@@ -20,14 +20,16 @@ class Purchase(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:
-            last_code = Purchase.objects.order_by('receipt_number').last()
-            if last_code:
-                last_number = int(last_code.receipt_number[2:])
-                self.receipt_number = f"PP{last_number + 1:05}"
-            else:
-                self.receipt_number = "PP00001"
+            last_purchase = Purchase.objects.order_by('id').last()
 
-        super().save(*args, **kwargs)
+            if last_purchase:
+                new_user_id = last_purchase.id + 1
+            else:
+                new_user_id = 1
+
+            self.receipt_number = f"N{new_user_id:05}"
+
+        super(Purchase, self).save(*args, **kwargs)
 
     def update_total_amount(self):
         self.total_amount = self.purchase_details.aggregate(total=Sum('total_amount'))['total'] or 0

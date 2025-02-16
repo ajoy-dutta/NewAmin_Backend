@@ -13,7 +13,7 @@ class MohajonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mohajon
         fields = '__all__'
-        
+
     def create(self, validated_data):
         mohajon = Mohajon.objects.create(**validated_data)
         return mohajon
