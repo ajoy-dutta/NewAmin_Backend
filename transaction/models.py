@@ -10,7 +10,7 @@ from store.models import Product, ProductType, GodownList, ShopBankInfo, BankMet
 
 class Purchase(models.Model):
     date = models.DateField(default=now)
-    receipt_number = models.CharField(max_length=10, unique=True, blank=True)
+    receipt_number = models.CharField(max_length=100, unique=True, blank=True)
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'), ('বেপারী/চাষী', 'বেপারী/চাষী')]) 
     buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="purchases")
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
@@ -20,14 +20,16 @@ class Purchase(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:
-            last_code = Purchase.objects.order_by('receipt_number').last()
-            if last_code:
-                last_number = int(last_code.receipt_number[2:])
-                self.receipt_number = f"PP{last_number + 1:05}"
-            else:
-                self.receipt_number = "PP00001"
+            last_purchase = Purchase.objects.order_by('id').last()
 
-        super().save(*args, **kwargs)
+            if last_purchase:
+                new_user_id = last_purchase.id + 1
+            else:
+                new_user_id = 1
+
+            self.receipt_number = f"N{new_user_id:05}"
+
+        super(Purchase, self).save(*args, **kwargs)
 
     def update_total_amount(self):
         self.total_amount = self.purchase_details.aggregate(total=Sum('total_amount'))['total'] or 0
@@ -35,7 +37,7 @@ class Purchase(models.Model):
 
 class PurchaseDetail(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="purchase_details")  # Add this line
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="purchase_details")  # ForeignKey to Product
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product")  # ForeignKey to Product
     product_category = models.CharField(max_length=255, blank=True, null=True)
     warehouse = models.CharField(max_length=255, blank=True, null=True)
     lot_number = models.CharField(max_length=100, blank=True, null=True)

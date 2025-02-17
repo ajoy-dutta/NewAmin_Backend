@@ -33,12 +33,10 @@ class MohajonListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer, data): 
         instance = serializer.save()  
 
-        for field, model in [
-          ("banking_details", BankInfo),
-           ]:
-          related_data = data.get(field, [])
-          for item in related_data:
-            model.objects.create(user=instance, **item)
+        for field, model in [("banking_details", BankInfo)]:
+            related_data = data.get(field, [])
+            for item in related_data:
+                model.objects.create(mohajon=instance, **item)
 
 
 
