@@ -86,7 +86,6 @@ class TransactionDetail(models.Model):
 
 
 
-
 ## sell method
 class Sell(models.Model):
     date = models.DateField()
@@ -113,19 +112,17 @@ class Sell(models.Model):
         return f"Sell {self.receipt_no} - {self.buyer_name}"
 
 
+
 class ProductSellInfo(models.Model):
-    sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="product_sells")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sold_products")  # ForeignKey to Product
-    product_type = models.CharField(ProductType, max_length=255, blank=True, null=True)
+    sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Product_sell_info")
+    product = models.CharField(ProductType, max_length=255, blank=True, null=True)
     bereft_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="bereft")
     godown_name = models.ForeignKey(GodownList, on_delete=models.CASCADE, related_name="GodownList")
     lot_number = models.CharField(max_length=50)
     bag_quantity = models.IntegerField(default=0)
-    seat_quantity = models.IntegerField(default=0)
     weight = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_bag_quantity = models.IntegerField(default=0)
-    sale_seat_quantity = models.IntegerField(default=0)
     sale_weight = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     sale_price_per_kg = models.DecimalField(max_digits=10, decimal_places=2)
     commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
@@ -137,34 +134,25 @@ class ProductSellInfo(models.Model):
         return f"{self.product_name} ({self.sell.receipt_no})"
 
 
-class CostInfo(models.Model):
-    sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="costs")
-    transaction_type = models.CharField(max_length=255, blank=True, null=True)
-    payment_method = models.ForeignKey(BankMethod, on_delete=models.CASCADE, related_name="cost_payment_methods")
-    invoice_number = models.CharField(max_length=100, blank=True, null=True)
-    driver_name = models.CharField(max_length=255, blank=True, null=True)
-    driver_mobile = models.CharField(max_length=15, blank=True, null=True)
-    truck_number = models.CharField(max_length=50, blank=True, null=True)
-    bank_mobile_number = models.CharField(max_length=20, blank=True, null=True)
-    bank_transaction_id = models.CharField(max_length=50, blank=True, null=True)
-    other_expenses = models.TextField(blank=True, null=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    is_paid = models.BooleanField(default=False)
 
+class CostInfo(models.Model):
+    sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Cost_info")
+    cost_type = models.CharField(max_length=255, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    costDescription = models.TextField(max_length=500, null= True)
+    
     def __str__(self):
         return f"Cost {self.sell.receipt_no} - {self.transaction_category}"
 
 
 class IncomeInfo(models.Model):
-    sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="incomes")
+    sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Income_info")
     payment_method = models.ForeignKey(BankMethod, on_delete=models.CASCADE, related_name="income_payment_methods")
     bank_name = models.ForeignKey(ShopBankInfo, on_delete=models.CASCADE, related_name="income_bank_entries")
     account_number = models.CharField(max_length=50, blank=True, null=True)
     check_number = models.CharField(max_length=50, blank=True, null=True)
-    bank_mobile_number = models.CharField(max_length=20, blank=True, null=True)
-    transaction_id = models.CharField(max_length=50, blank=True, null=True)
+    mobile_number = models.CharField(max_length=20, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    is_paid = models.BooleanField(default=False)
-
+    
     def __str__(self):
         return f"Income {self.sell.receipt_no} - {self.amount}"

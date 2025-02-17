@@ -17,3 +17,7 @@ class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class SellListCreateView(generics.ListCreateAPIView):
     queryset = Sell.objects.all()
     serializer_class = SellSerialzer
+
+class SellRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Sell.objects.all()
+    serializer_class = SellSerialzer
