@@ -4,6 +4,7 @@ from django.utils.timezone import now
 from .models import*
 from person.models import Mohajon,Customer
 from store.models import Product, GodownList, ShopBankInfo, BankMethod
+from decimal import Decimal 
 
 
 # Create your models here.
@@ -116,7 +117,7 @@ class Sell(models.Model):
 
 class ProductSellInfo(models.Model):
     sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Product_sell_info")
-    product = models.CharField(Product, max_length=255, blank=True, null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE,blank=True, null= True, related_name="Product" )
     bereft_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="bereft_name")
     godown_name = models.ForeignKey(GodownList, on_delete=models.CASCADE, related_name="GodownList")
     lot_number = models.CharField(max_length=50)
