@@ -118,7 +118,7 @@ class Sell(models.Model):
 class ProductSellInfo(models.Model):
     sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Product_sell_info")
     product = models.CharField(ProductType, max_length=255, blank=True, null=True)
-    bereft_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="bereft")
+    bereft_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="bereft_name")
     godown_name = models.ForeignKey(GodownList, on_delete=models.CASCADE, related_name="GodownList")
     lot_number = models.CharField(max_length=50)
     bag_quantity = models.IntegerField(default=0)
@@ -149,8 +149,8 @@ class CostInfo(models.Model):
 
 class IncomeInfo(models.Model):
     sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Income_info")
-    payment_method = models.ForeignKey(BankMethod, on_delete=models.CASCADE, related_name="income_payment_methods")
-    bank_name = models.ForeignKey(ShopBankInfo, on_delete=models.CASCADE, related_name="income_bank_entries")
+    payment_method = models.CharField(max_length=255, blank=True, null=True)  
+    bank_name = models.CharField(max_length=255, blank=True, null=True)  
     account_number = models.CharField(max_length=50, blank=True, null=True)
     check_number = models.CharField(max_length=50, blank=True, null=True)
     mobile_number = models.CharField(max_length=20, blank=True, null=True)
