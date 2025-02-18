@@ -112,16 +112,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 
 
-class ProductTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductType
-        fields = ['id', 'name', 'product', 'image', 'code']
-        
-
-# Serializer for Product
 class ProductSerializer(serializers.ModelSerializer):
-    product_types = ProductTypeSerializer(many=True, read_only=True)
-
     class Meta:
         model = Product
-        fields = ['id', 'name', 'product_types']
+        fields = ['id', 'name', 'image', 'code']
+        
+
