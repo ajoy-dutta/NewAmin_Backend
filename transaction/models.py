@@ -27,7 +27,7 @@ class Purchase(models.Model):
             else:
                 new_user_id = 1
 
-            self.receipt_number = f"N{new_user_id:05}"
+            self.receipt_number = f"PP{new_user_id:07}"
 
         super(Purchase, self).save(*args, **kwargs)
 
