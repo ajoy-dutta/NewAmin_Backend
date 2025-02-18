@@ -76,8 +76,6 @@ class PurchaseDetail(models.Model):
 class TransactionDetail(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="transaction_details")  # Add this line
     transaction_type = models.CharField(max_length=255, blank=True, null=True)
-    invoice_number = models.CharField(max_length=100, blank=True, null=True)
-
     additional_cost_description = models.TextField(blank=True, null=True)
     additional_cost_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 

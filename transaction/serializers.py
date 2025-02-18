@@ -6,7 +6,6 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
         model = TransactionDetail
         fields = [
             "transaction_type",
-            "invoice_number",
             "additional_cost_description",
             "additional_cost_amount",
         ]
