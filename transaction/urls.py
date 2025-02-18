@@ -6,4 +6,5 @@ urlpatterns = [
     path('purchases/<pk>/', PurchaseRetrieveUpdateDestroyView.as_view(), name='purchase-detail'),
     
     path('sell/', SellListCreateView.as_view(), name='sell-list-create'),
+    path('sell/<pk>/', SellRetrieveUpdateDestroyView.as_view(), name='sell-list-create'),
 ]

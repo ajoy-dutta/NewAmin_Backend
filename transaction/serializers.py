@@ -6,19 +6,9 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
         model = TransactionDetail
         fields = [
             "transaction_type",
-            "payment_method",
             "invoice_number",
-            "driver_name",
-            "driver_mobile",
-            "truck_number",
-            "bank_name",
-            "account_number",
-            "cheque_number",
-            "banking_mobile_number",
-            "banking_transaction_id",
             "additional_cost_description",
             "additional_cost_amount",
-            "is_paid",
         ]
 
 class PurchaseDetailSerializer(serializers.ModelSerializer):
@@ -26,11 +16,9 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
         model = PurchaseDetail
         fields = [
             "product",
-            "product_category",
             "warehouse",
             "lot_number",
             "bag_quantity",
-            "sheet_quantity",
             "weight",
             "purchase_price",
             "sale_price",
@@ -84,11 +72,12 @@ class SellSerializer(serializers.ModelSerializer):
     Product_sell_info = ProductSellInfoSerializer(many = True, required = False)
     Cost_info = CostInfoSerializer(many = True, required = False)
     Income_info = IncomeInfoSerializer(many = True, required = False)
+    buyer_name = serializers.CharField(source='buyer.name', read_only=True)
     
     
     class Meta:
         model = Sell
-        fields = '__all__'
+        fields = ['id', 'date', 'receipt_no','buyer','buyer_name','Product_sell_info', 'Cost_info', 'Income_info'] 
         
     def create(self, validate_data):
         print(validate_data)
