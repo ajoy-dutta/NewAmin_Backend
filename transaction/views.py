@@ -40,7 +40,7 @@ class PurchaseListCreateView(generics.ListCreateAPIView):
         ]:
             related_data = data.get(field, [])
             for item in related_data:
-                model.objects.create(user=purchase, **item)
+                model.objects.create(buyer_name=purchase, **item)
 
 
 class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

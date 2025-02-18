@@ -26,7 +26,6 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
         model = PurchaseDetail
         fields = [
             "product",
-            "product_category",
             "warehouse",
             "lot_number",
             "bag_quantity",
