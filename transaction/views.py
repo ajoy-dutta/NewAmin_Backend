@@ -5,6 +5,7 @@ from .serializers import*
 import json
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
 
 
 
@@ -30,17 +31,32 @@ class PurchaseListCreateView(generics.ListCreateAPIView):
 
         return Response(serializer.data, status=201)
 
+    def clean_decimal_fields(self,data, fields):
+        """Convert empty strings to None for decimal fields."""
+        for field in fields:
+            if field in data and data[field] == "":
+                data[field] = None
+        return data
+
     def perform_create(self, serializer, data):
-        
-        purchase = serializer.save() 
-        
+        purchase = serializer.save()
+
         for field, model in [
             ("transaction_details", TransactionDetail),
             ("purchase_details", PurchaseDetail),
         ]:
             related_data = data.get(field, [])
             for item in related_data:
-                model.objects.create(buyer_name=purchase, **item)
+                decimal_fields = ["purchase_price", "sale_price", "commission", "total_amount", "additional_cost_amount"]
+                item = self.clean_decimal_fields(item, decimal_fields)
+
+                if field == "purchase_details":
+                    product_id = item.pop("product", None)
+                    if product_id is not None:
+                        item["product"] = get_object_or_404(Product, pk=product_id)
+
+                model.objects.create(purchase=purchase, **item)
+
 
 
 class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

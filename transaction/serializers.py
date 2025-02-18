@@ -6,19 +6,9 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
         model = TransactionDetail
         fields = [
             "transaction_type",
-            "payment_method",
             "invoice_number",
-            "driver_name",
-            "driver_mobile",
-            "truck_number",
-            "bank_name",
-            "account_number",
-            "cheque_number",
-            "banking_mobile_number",
-            "banking_transaction_id",
             "additional_cost_description",
             "additional_cost_amount",
-            "is_paid",
         ]
 
 class PurchaseDetailSerializer(serializers.ModelSerializer):
@@ -29,7 +19,6 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
             "warehouse",
             "lot_number",
             "bag_quantity",
-            "sheet_quantity",
             "weight",
             "purchase_price",
             "sale_price",

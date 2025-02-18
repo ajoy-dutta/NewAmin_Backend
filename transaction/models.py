@@ -10,7 +10,7 @@ from store.models import Product, GodownList, ShopBankInfo, BankMethod
 
 class Purchase(models.Model):
     date = models.DateField(default=now)
-    receipt_number = models.CharField(max_length=100, unique=True, blank=True)
+    receipt_number = models.CharField(max_length=100, unique=True, blank=True,null = True)
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'), ('বেপারী/চাষী', 'বেপারী/চাষী')]) 
     buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="purchases")
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
@@ -27,7 +27,7 @@ class Purchase(models.Model):
             else:
                 new_user_id = 1
 
-            self.receipt_number = f"N{new_user_id:05}"
+            self.receipt_number = f"PP{new_user_id:07}"
 
         super(Purchase, self).save(*args, **kwargs)
 
@@ -42,7 +42,6 @@ class PurchaseDetail(models.Model):
     lot_number = models.CharField(max_length=100, blank=True, null=True)
 
     bag_quantity = models.IntegerField()
-    sheet_quantity = models.IntegerField()
     weight = models.DecimalField(max_digits=10, decimal_places=2)
 
     
@@ -52,10 +51,22 @@ class PurchaseDetail(models.Model):
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.total_amount = self.purchase_price * self.weight 
-        super().save(*args, **kwargs)
+        # Ensure both purchase_price and weight are not None
+        if self.purchase_price is None or self.weight is None:
+            raise ValueError("purchase_price and weight must be provided")
 
+        # Convert to Decimal if they are strings
+        if isinstance(self.purchase_price, str):
+            self.purchase_price = Decimal(self.purchase_price)
+        if isinstance(self.weight, str):
+            self.weight = Decimal(self.weight)
+
+        # Perform multiplication
+        self.total_amount = self.purchase_price * self.weight
+
+        super().save(*args, **kwargs)
         self.purchase.update_total_amount()
+
 
     def __str__(self):
         return f"{self.product.name} ({self.weight} kg)"
@@ -64,18 +75,7 @@ class PurchaseDetail(models.Model):
 class TransactionDetail(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="transaction_details")  # Add this line
     transaction_type = models.CharField(max_length=255, blank=True, null=True)
-    payment_method = models.CharField(max_length=255, blank=True, null=True)
     invoice_number = models.CharField(max_length=100, blank=True, null=True)
-    
-    driver_name = models.CharField(max_length=255, blank=True, null=True)
-    driver_mobile = models.CharField(max_length=15, blank=True, null=True)
-    truck_number = models.CharField(max_length=50, blank=True, null=True)
-
-    bank_name = models.CharField(max_length=255, blank=True, null=True)
-    account_number = models.CharField(max_length=50, blank=True, null=True)
-    cheque_number = models.CharField(max_length=50, blank=True, null=True)
-    banking_mobile_number = models.CharField(max_length=15, blank=True, null=True)
-    banking_transaction_id = models.CharField(max_length=100, blank=True, null=True)
 
     additional_cost_description = models.TextField(blank=True, null=True)
     additional_cost_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -83,7 +83,7 @@ class TransactionDetail(models.Model):
     is_paid = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.transaction_type} - {self.additional_cost_amount} ({'Paid' if self.is_paid else 'Unpaid'})"  # Fixed issue
+        return f"{self.transaction_type} - {self.additional_cost_amount}"  # Fixed issue
 
 
 
