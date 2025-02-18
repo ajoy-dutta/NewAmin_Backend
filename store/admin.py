@@ -14,7 +14,6 @@ admin.site.register(Employee)
 admin.site.register(Education)
 admin.site.register(BankingDetails)
 admin.site.register(Experience)
-admin.site.register(ProductType)
 admin.site.register(Product)
 
 
