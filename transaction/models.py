@@ -36,9 +36,8 @@ class Purchase(models.Model):
         self.save()
 
 class PurchaseDetail(models.Model):
-    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="purchase_details")  # Add this line
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product")  # ForeignKey to Product
-    product_category = models.CharField(max_length=255, blank=True, null=True)
+    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="purchase_details")  
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product")
     warehouse = models.CharField(max_length=255, blank=True, null=True)
     lot_number = models.CharField(max_length=100, blank=True, null=True)
 
