@@ -100,3 +100,11 @@ class PaymentRecieveListCreateView(generics.ListCreateAPIView):
 class PaymentRecieveRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PaymentRecieve.objects.all()
     serializer_class = PaymentRecieveSerializer
+
+class EmployeePaymentListCreateView(generics.ListCreateAPIView):
+    queryset = EmployeePayment.objects.all()
+    serializer_class = EmployeePaymentSerializer
+
+class OtherPaymentListCreateView(generics.ListCreateAPIView):
+    queryset = OtherPayment.objects.all()
+    serializer_class = OtherPaymentSerializer
