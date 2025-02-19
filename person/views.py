@@ -67,10 +67,10 @@ class MohajonDestroyUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
         for field, model in [
            ("banking_details", BankInfo),
         ]:
-           model.objects.filter(user=instance).delete()
+           model.objects.filter(mohajon=instance).delete()
            related_data = data.get(field, [])
            for item in related_data:
-              model.objects.create(user=instance, **item)
+              model.objects.create(mohajon=instance, **item)
 
 
 class CustomerListCreateAPIView(generics.ListCreateAPIView):

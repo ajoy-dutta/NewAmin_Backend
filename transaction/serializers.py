@@ -6,19 +6,9 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
         model = TransactionDetail
         fields = [
             "transaction_type",
-            "payment_method",
             "invoice_number",
-            "driver_name",
-            "driver_mobile",
-            "truck_number",
-            "bank_name",
-            "account_number",
-            "cheque_number",
-            "banking_mobile_number",
-            "banking_transaction_id",
             "additional_cost_description",
             "additional_cost_amount",
-            "is_paid",
         ]
 
 class PurchaseDetailSerializer(serializers.ModelSerializer):
@@ -29,7 +19,6 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
             "warehouse",
             "lot_number",
             "bag_quantity",
-            "sheet_quantity",
             "weight",
             "purchase_price",
             "sale_price",
@@ -65,18 +54,21 @@ class ProductSellInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductSellInfo
         fields = '__all__'
+        extra_kwargs = {'sell': {'required': False}}
         
         
 class CostInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = CostInfo
         fields = '__all__'
+        extra_kwargs = {'sell': {'required': False}}
         
         
 class IncomeInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = IncomeInfo
         fields = '__all__'
+        extra_kwargs = {'sell': {'required': False}}
         
         
 class SellSerializer(serializers.ModelSerializer):
@@ -90,10 +82,22 @@ class SellSerializer(serializers.ModelSerializer):
         model = Sell
         fields = ['id', 'date', 'receipt_no','buyer','buyer_name','Product_sell_info', 'Cost_info', 'Income_info'] 
         
-    def create(self, validate_data):
-        print(validate_data)
-        
-        sell = Sell.objects.create( **validate_data )
+    def create(self, validated_data):
+        product_sell_data = validated_data.pop('Product_sell_info', [])
+        cost_info_data = validated_data.pop('Cost_info', [])
+        income_info_data = validated_data.pop('Income_info', [])
+
+        sell = Sell.objects.create(**validated_data)
+
+        for product in product_sell_data:
+            ProductSellInfo.objects.create(sell=sell, **product)
+
+        for cost in cost_info_data:
+            CostInfo.objects.create(sell=sell, **cost)
+
+        for income in income_info_data:
+            IncomeInfo.objects.create(sell=sell, **income)
+
         return sell
     
     def update(self, instance, validate_data):

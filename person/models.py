@@ -53,12 +53,11 @@ class Mohajon(models.Model):
         if not self.code:
             last_mohajon = Mohajon.objects.order_by('id').last()
 
-            if last_mohajon:
-                new_user_id = last_mohajon.id + 1
-            else:
-                new_user_id = 1
+            new_user_id = (last_mohajon.id + 1) if last_mohajon else 1
 
-            self.code = f"N{new_user_id:05}"
+            
+            prefix = "M" if self.business_type == "মহাজন" else "B"
+            self.code = f"{prefix}{new_user_id:05}"
 
         super(Mohajon, self).save(*args, **kwargs)
 
@@ -128,7 +127,7 @@ class Customer(models.Model):
             else:
                 new_user_id = 1
 
-            self.code = f"N{new_user_id:05}"
+            self.code = f"K{new_user_id:05}"
 
         super(Customer, self).save(*args, **kwargs)
 
