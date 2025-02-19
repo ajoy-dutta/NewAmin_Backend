@@ -3,7 +3,7 @@ from django.db.models import Sum
 from django.utils.timezone import now
 from .models import*
 from person.models import Mohajon,Customer
-from store.models import Product, GodownList, ShopBankInfo, BankMethod
+from store.models import Product, GodownList, ShopBankInfo, BankMethod,Employee
 from decimal import Decimal 
 
 
@@ -156,3 +156,73 @@ class IncomeInfo(models.Model):
     
     def __str__(self):
         return f"Income {self.sell.receipt_no} - {self.amount}"
+
+class Payment(models.Model):
+    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='payments')
+    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
+    payment_description=models.TextField(blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)  # Timestamp
+    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+
+    def save(self, *args, **kwargs):
+        """ Update total_payment in Mohajon when a new payment is added """
+        super(Payment, self).save(*args, **kwargs)
+        self.mohajon.total_payment += self.amount
+        self.mohajon.save(update_fields=['total_payment'])  # Update only total_payment
+        if not self.code:
+            last_payment = Payment.objects.order_by('id').last()
+
+            if last_payment:
+                new_user_id = last_payment.id + 1
+            else:
+                new_user_id = 1
+
+            self.code = f"P{new_user_id:07}"
+
+        super(Payment, self).save(*args, **kwargs)
+
+
+class EmployeePayment(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payments')
+    name = models.CharField(max_length=255, blank=True,null=True) 
+    payment_description=models.TextField(blank=True, null=True)
+    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)  # Timestamp
+    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            last_payment = EmployeePayment.objects.order_by('id').last()
+
+            if last_payment:
+                new_user_id = last_payment.id + 1
+            else:
+                new_user_id = 1
+
+            self.code = f"P{new_user_id:07}"
+
+        super(EmployeePayment, self).save(*args, **kwargs)
+
+class OtherPayment(models.Model):
+    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='other_payments')
+    voucher = models.CharField(max_length=50, blank=True, null=True)  # Voucher number (Optional)
+    payment_description=models.TextField(blank=True, null=True)
+    transaction_type=models.CharField(max_length=255, blank=True, null=True) 
+    amount = models.DecimalField(max_digits=12, decimal_places=2)  # Payment amount
+    date = models.DateTimeField(auto_now_add=True)  # Timestamp when the payment is added
+    code = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Unique payment code
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            last_payment = OtherPayment.objects.order_by('id').last()
+
+            if last_payment:
+                new_user_id = last_payment.id + 1
+            else:
+                new_user_id = 1
+
+            self.code = f"O{new_user_id:07}"
+
+        super(OtherPayment, self).save(*args, **kwargs)

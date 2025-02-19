@@ -146,3 +146,27 @@ class SellSerializer(serializers.ModelSerializer):
             model.objects.filter(sell=instance).exclude(id__in=seen_ids).delete()
 
         return instance
+
+class PaymentSerializer(serializers.ModelSerializer):
+    mohajon_name = serializers.CharField(source='mohajon.name')  # To get Mohajon's name
+
+    class Meta:
+        model = Payment
+        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date', 'mohajon_name','payment_description']
+
+    def create(self, validated_data):
+        """ Override create method to update the Mohajon total_payment """
+        payment = super().create(validated_data)
+        # The save method in the Payment model already updates the total_payment
+        return payment
+
+class EmployeePaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeePayment
+        fields = '__all__'
+
+class OtherPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OtherPayment
+        fields = '__all__'
+
