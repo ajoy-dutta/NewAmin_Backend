@@ -91,3 +91,11 @@ class PaymentListCreateView(APIView):
             payment = serializer.save()  # This will automatically update the Mohajon total_payment
             return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EmployeePaymentListCreateView(generics.ListCreateAPIView):
+    queryset = EmployeePayment.objects.all()
+    serializer_class = EmployeePaymentSerializer
+
+class OtherPaymentListCreateView(generics.ListCreateAPIView):
+    queryset = OtherPayment.objects.all()
+    serializer_class = OtherPaymentSerializer
