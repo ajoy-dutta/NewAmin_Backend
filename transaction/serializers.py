@@ -152,7 +152,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date', 'mohajon_name','payment_description']
+        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date', 'mohajon_name','payment_description','payment_method','bank_name','account_number','cheque_number','mobile_banking_number']
 
     def create(self, validated_data):
         """ Override create method to update the Mohajon total_payment """

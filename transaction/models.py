@@ -165,6 +165,13 @@ class Payment(models.Model):
     date = models.DateField() 
     code = models.CharField(max_length=50, unique=True,blank=True,null=True)
 
+    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
+    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
+    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
+
+
     def save(self, *args, **kwargs):
         """ Update total_payment in Mohajon when a new payment is added """
         super(Payment, self).save(*args, **kwargs)
@@ -192,6 +199,12 @@ class EmployeePayment(models.Model):
     date = models.DateField() 
     code = models.CharField(max_length=50, unique=True,blank=True,null=True)
 
+    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
+    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
+    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
+
     def save(self, *args, **kwargs):
         if not self.code:
             last_payment = EmployeePayment.objects.order_by('id').last()
@@ -206,13 +219,18 @@ class EmployeePayment(models.Model):
         super(EmployeePayment, self).save(*args, **kwargs)
 
 class OtherPayment(models.Model):
-    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='other_payments')
     voucher = models.CharField(max_length=50, blank=True, null=True)  # Voucher number (Optional)
     payment_description=models.TextField(blank=True, null=True)
     transaction_type=models.CharField(max_length=255, blank=True, null=True) 
     amount = models.DecimalField(max_digits=12, decimal_places=2)  # Payment amount
     date = models.DateField() 
     code = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Unique payment code
+
+    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
+    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
+    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
 
     def save(self, *args, **kwargs):
         if not self.code:
