@@ -63,19 +63,6 @@ class Mohajon(models.Model):
 
         super(Mohajon, self).save(*args, **kwargs)
 
-class Payment(models.Model):
-    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='payments')
-    voucher = models.CharField(max_length=50, unique=True)  # Voucher number
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)  # Timestamp
-
-    def save(self, *args, **kwargs):
-        """ Update total_payment in Mohajon when a new payment is added """
-        super(Payment, self).save(*args, **kwargs)
-        self.mohajon.total_payment += self.amount
-        self.mohajon.save(update_fields=['total_payment'])  # Update only total_payment
-
-
 
 class BankInfo(models.Model):
     mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="banking_details")
@@ -143,4 +130,6 @@ class Customer(models.Model):
             self.code = f"K{new_user_id:05}"
 
         super(Customer, self).save(*args, **kwargs)
+
+
 

@@ -7,4 +7,7 @@ urlpatterns = [
     
     path('sell/', SellListCreateView.as_view(), name='sell-list-create'),
     path('sell/<pk>/', SellRetrieveUpdateDestroyView.as_view(), name='sell-list-create'),
+
+     path('payments/', PaymentListCreateView.as_view(), name='payment-list-create'),
+
 ]
