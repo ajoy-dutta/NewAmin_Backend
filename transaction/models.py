@@ -76,8 +76,6 @@ class PurchaseDetail(models.Model):
 class TransactionDetail(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="transaction_details")  # Add this line
     transaction_type = models.CharField(max_length=255, blank=True, null=True)
-    invoice_number = models.CharField(max_length=100, blank=True, null=True)
-
     additional_cost_description = models.TextField(blank=True, null=True)
     additional_cost_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
@@ -159,3 +157,85 @@ class IncomeInfo(models.Model):
     
     def __str__(self):
         return f"Income {self.sell.receipt_no} - {self.amount}"
+    
+
+
+   
+class PaymentRecieve(models.Model):
+    date = models.DateField(auto_now_add=True)  # Auto-generate the date
+    receipt_number = models.CharField(max_length=50, unique=True, blank=True)  # Auto-generate
+    voucher_number = models.CharField(max_length=50, blank=True, null=True)
+    buyer = models.ForeignKey(Customer,on_delete=models.CASCADE, related_name="buyer")  
+    paymentDescription = models.TextField(max_length=255,blank=True, null=True )
+    payment_method = models.CharField(max_length=100, blank=True, null=True)
+    bank_name = models.CharField(max_length=100, blank=True, null=True)
+    account_number = models.CharField(max_length=50, blank=True, null=True)
+    cheque_number = models.CharField(max_length=50, blank=True, null=True)
+    mobile_bank = models.CharField(max_length=100, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+   
+    def save(self, *args, **kwargs):
+        # Auto-generate receipt_number if not provided
+        if not self.receipt_number:
+            last_transaction = PaymentRecieve.objects.filter(receipt_number__startswith="TR").order_by('-receipt_number').first()
+            if last_transaction:
+                try:
+                    last_number = int(last_transaction.receipt_number[2:])
+                    self.receipt_number = f"TR{last_number + 1:07}"
+                except ValueError:
+                    raise ValueError(f"Invalid receipt format: {last_transaction.receipt_number}")
+            else:
+                self.receipt_number = "TR0000001"
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Transaction {self.receipt_number} - {self.buyer_name}"
+    
+    
+
+class Payment(models.Model):
+    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='payments')
+    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)  # Timestamp
+    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+
+    def save(self, *args, **kwargs):
+        """ Update total_payment in Mohajon when a new payment is added """
+        super(Payment, self).save(*args, **kwargs)
+        self.mohajon.total_payment += self.amount
+        self.mohajon.save(update_fields=['total_payment'])  # Update only total_payment
+        if not self.code:
+            last_payment = Payment.objects.order_by('id').last()
+
+            if last_payment:
+                new_user_id = last_payment.id + 1
+            else:
+                new_user_id = 1
+
+            self.code = f"P{new_user_id:07}"
+
+        super(Payment, self).save(*args, **kwargs)
+
+
+class CustomerPayment(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='payments')
+    name = models.CharField(max_length=255, blank=True,null=True) 
+    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)  # Timestamp
+    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            last_payment = CustomerPayment.objects.order_by('id').last()
+
+            if last_payment:
+                new_user_id = last_payment.id + 1
+            else:
+                new_user_id = 1
+
+            self.code = f"P{new_user_id:07}"
+
+        super(CustomerPayment, self).save(*args, **kwargs)

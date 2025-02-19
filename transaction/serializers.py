@@ -6,7 +6,6 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
         model = TransactionDetail
         fields = [
             "transaction_type",
-            "invoice_number",
             "additional_cost_description",
             "additional_cost_amount",
         ]
@@ -124,6 +123,24 @@ class SellSerializer(serializers.ModelSerializer):
 
         return instance
 
+class PaymentSerializer(serializers.ModelSerializer):
+    mohajon_name = serializers.CharField(source='mohajon.name')  # To get Mohajon's name
 
+    class Meta:
+        model = Payment
+        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date', 'mohajon_name']
+
+    def create(self, validated_data):
+        """ Override create method to update the Mohajon total_payment """
+        payment = super().create(validated_data)
+        # The save method in the Payment model already updates the total_payment
+        return payment
     
     
+    
+class PaymentRecieveSerializer(serializers.ModelSerializer):
+    buyer_name = serializers.CharField(source='buyer.name', read_only=True)
+
+    class Meta:
+        model = PaymentRecieve
+        fields = '__all__'

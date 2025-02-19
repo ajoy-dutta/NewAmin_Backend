@@ -73,6 +73,7 @@ class MohajonDestroyUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
               model.objects.create(mohajon=instance, **item)
 
 
+
 class CustomerListCreateAPIView(generics.ListCreateAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer

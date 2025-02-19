@@ -48,6 +48,8 @@ class Mohajon(models.Model):
     previous_account = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     khatian_number = models.CharField(max_length=50, blank=True, null=True)
         
+    total_payment = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # New field to track total payments
+
         
     def save(self, *args, **kwargs):
         if not self.code:
@@ -60,8 +62,6 @@ class Mohajon(models.Model):
             self.code = f"{prefix}{new_user_id:05}"
 
         super(Mohajon, self).save(*args, **kwargs)
-
-
 
 
 class BankInfo(models.Model):
@@ -130,4 +130,6 @@ class Customer(models.Model):
             self.code = f"K{new_user_id:05}"
 
         super(Customer, self).save(*args, **kwargs)
+
+
 

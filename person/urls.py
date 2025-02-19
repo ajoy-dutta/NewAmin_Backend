@@ -6,5 +6,5 @@ urlpatterns = [
     path('mohajons/<pk>/', MohajonDestroyUpdateAPIView.as_view(), name='mohajon-destroy-update'),
     path('customers/', CustomerListCreateAPIView.as_view(), name='customer-list-create'),
     path('customers/<pk>/', CustomerDestroyUpdateAPIView.as_view(), name='customer-destroy-update'),
-    
+
 ]

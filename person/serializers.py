@@ -25,6 +25,9 @@ class MohajonSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+        
+
+
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:

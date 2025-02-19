@@ -7,4 +7,10 @@ urlpatterns = [
     
     path('sell/', SellListCreateView.as_view(), name='sell-list-create'),
     path('sell/<pk>/', SellRetrieveUpdateDestroyView.as_view(), name='sell-list-create'),
+
+    path('payments/', PaymentListCreateView.as_view(), name='payment-list-create'),
+    
+    path('payments-recieve/', PaymentRecieveListCreateView.as_view(), name='paymentRecieve-list-create'),
+    path('payments-recieve/<int:pk>/', PaymentRecieveRetrieveUpdateDestroyView.as_view(), name='paymentRecieve-detail'),
+
 ]
