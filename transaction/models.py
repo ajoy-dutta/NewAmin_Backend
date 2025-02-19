@@ -145,6 +145,7 @@ class CostInfo(models.Model):
         return f"Cost {self.sell.receipt_no} - {self.transaction_category}"
 
 
+
 class IncomeInfo(models.Model):
     sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Income_info")
     payment_method = models.CharField(max_length=255, blank=True, null=True)  
@@ -156,6 +157,42 @@ class IncomeInfo(models.Model):
     
     def __str__(self):
         return f"Income {self.sell.receipt_no} - {self.amount}"
+    
+
+
+   
+class PaymentRecieve(models.Model):
+    date = models.DateField(auto_now_add=True)  # Auto-generate the date
+    receipt_number = models.CharField(max_length=50, unique=True, blank=True)  # Auto-generate
+    voucher_number = models.CharField(max_length=50, blank=True, null=True)
+    buyer = models.ForeignKey(Customer,on_delete=models.CASCADE, related_name="buyer")  
+    paymentDescription = models.TextField(max_length=255,blank=True, null=True )
+    payment_method = models.CharField(max_length=100, blank=True, null=True)
+    bank_name = models.CharField(max_length=100, blank=True, null=True)
+    account_number = models.CharField(max_length=50, blank=True, null=True)
+    cheque_number = models.CharField(max_length=50, blank=True, null=True)
+    mobile_bank = models.CharField(max_length=100, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+   
+    def save(self, *args, **kwargs):
+        # Auto-generate receipt_number if not provided
+        if not self.receipt_number:
+            last_transaction = PaymentRecieve.objects.filter(receipt_number__startswith="TR").order_by('-receipt_number').first()
+            if last_transaction:
+                try:
+                    last_number = int(last_transaction.receipt_number[2:])
+                    self.receipt_number = f"TR{last_number + 1:07}"
+                except ValueError:
+                    raise ValueError(f"Invalid receipt format: {last_transaction.receipt_number}")
+            else:
+                self.receipt_number = "TR0000001"
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Transaction {self.receipt_number} - {self.buyer_name}"
+    
+    
 
 class Payment(models.Model):
     mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='payments')
