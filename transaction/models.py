@@ -147,6 +147,7 @@ class CostInfo(models.Model):
         return f"Cost {self.sell.receipt_no} - {self.transaction_category}"
 
 
+
 class IncomeInfo(models.Model):
     sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Income_info")
     payment_method = models.CharField(max_length=255, blank=True, null=True)  
