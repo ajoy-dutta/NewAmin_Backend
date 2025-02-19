@@ -162,7 +162,7 @@ class Payment(models.Model):
     voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
     payment_description=models.TextField(blank=True, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)  # Timestamp
+    date = models.DateField() 
     code = models.CharField(max_length=50, unique=True,blank=True,null=True)
 
     def save(self, *args, **kwargs):
@@ -189,7 +189,7 @@ class EmployeePayment(models.Model):
     payment_description=models.TextField(blank=True, null=True)
     voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateTimeField(auto_now_add=True)  # Timestamp
+    date = models.DateField() 
     code = models.CharField(max_length=50, unique=True,blank=True,null=True)
 
     def save(self, *args, **kwargs):
@@ -211,7 +211,7 @@ class OtherPayment(models.Model):
     payment_description=models.TextField(blank=True, null=True)
     transaction_type=models.CharField(max_length=255, blank=True, null=True) 
     amount = models.DecimalField(max_digits=12, decimal_places=2)  # Payment amount
-    date = models.DateTimeField(auto_now_add=True)  # Timestamp when the payment is added
+    date = models.DateField() 
     code = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Unique payment code
 
     def save(self, *args, **kwargs):
