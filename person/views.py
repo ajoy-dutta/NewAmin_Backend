@@ -72,6 +72,21 @@ class MohajonDestroyUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
            for item in related_data:
               model.objects.create(mohajon=instance, **item)
 
+class PaymentListCreateView(APIView):
+    def get(self, request, *args, **kwargs):
+        """ List all payments """
+        payments = Payment.objects.all()
+        serializer = PaymentSerializer(payments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        """ Create a new payment """
+        serializer = PaymentSerializer(data=request.data)
+        if serializer.is_valid():
+            payment = serializer.save()  # This will automatically update the Mohajon total_payment
+            return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CustomerListCreateAPIView(generics.ListCreateAPIView):
     queryset = Customer.objects.all()

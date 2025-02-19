@@ -214,21 +214,16 @@ class BankingDetails(models.Model):
         return f"{self.payment_method} - {self.account_holder_name}"
     
 
+
+
 class Product(models.Model):
-    name = models.CharField(max_length=255,unique=True,blank=True, null = True)
-
-    def __str__(self):
-        return self.name
-
-class ProductType(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="types")
     image = models.ImageField(upload_to='image/Products/', blank=True, null=True)
     code = models.CharField(max_length=6, blank=True, null=True, unique=True)
 
     def save(self, *args, **kwargs):
         if not self.code:
-            last_code = ProductType.objects.all().order_by('id').last()
+            last_code = Product.objects.all().order_by('id').last()
             new_code = f"{last_code.id + 1:04d}" if last_code else "0001"
             self.code = new_code
         super().save(*args, **kwargs)

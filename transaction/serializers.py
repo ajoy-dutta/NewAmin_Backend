@@ -6,7 +6,6 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
         model = TransactionDetail
         fields = [
             "transaction_type",
-            "invoice_number",
             "additional_cost_description",
             "additional_cost_amount",
         ]
@@ -100,11 +99,50 @@ class SellSerializer(serializers.ModelSerializer):
 
         return sell
     
-    def update(self, instance, validate_data):
-        
-        # Update Employee fields
-        for attr, value in validate_data.items():
+    def update(self, instance, validated_data):
+        # ✅ Extract related fields
+        related_fields = {
+            "Product_sell_info": (ProductSellInfo, validated_data.pop("Product_sell_info", [])),
+            "Cost_info": (CostInfo, validated_data.pop("Cost_info", [])),
+            "Income_info": (IncomeInfo, validated_data.pop("Income_info", [])),
+        }
+
+        # ✅ Update the main Sell instance fields
+        for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-            
+
+        # ✅ Process related fields efficiently
+        for field, (model, new_records) in related_fields.items():
+            existing_records = {obj.id: obj for obj in getattr(instance, field).all()}  # Fetch existing records
+
+            new_objects = []
+            updated_objects = []
+            seen_ids = set()
+
+            for item in new_records:
+                item_id = item.pop("id", None)  # Extract ID (if exists) and remove from dict
+                item.pop("sell", None)  # ✅ Prevent error by removing 'sell' from data
+
+                if item_id and item_id in existing_records:
+                    # ✅ Update existing records
+                    obj = existing_records[item_id]
+                    for key, val in item.items():
+                        setattr(obj, key, val)
+                    updated_objects.append(obj)
+                    seen_ids.add(item_id)
+                else:
+                    # ✅ Create new records
+                    new_objects.append(model(sell=instance, **item))
+
+            # ✅ Perform bulk update & create
+            if updated_objects:
+                model.objects.bulk_update(updated_objects, list(new_records[0].keys()) if new_records else [])
+
+            if new_objects:
+                model.objects.bulk_create(new_objects)
+
+            # ✅ Delete removed records
+            model.objects.filter(sell=instance).exclude(id__in=seen_ids).delete()
+
         return instance
