@@ -99,51 +99,27 @@ class SellSerializer(serializers.ModelSerializer):
 
         return sell
     
+    
     def update(self, instance, validated_data):
-        # ✅ Extract related fields
         related_fields = {
-            "Product_sell_info": (ProductSellInfo, validated_data.pop("Product_sell_info", [])),
-            "Cost_info": (CostInfo, validated_data.pop("Cost_info", [])),
-            "Income_info": (IncomeInfo, validated_data.pop("Income_info", [])),
+            "Product_sell_info": ProductSellInfo,
+            "Cost_info": CostInfo,
+            "Income_info": IncomeInfo,
         }
 
-        # ✅ Update the main Sell instance fields
+        related_data = {field: validated_data.pop(field, None) for field in related_fields}
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # ✅ Process related fields efficiently
-        for field, (model, new_records) in related_fields.items():
-            existing_records = {obj.id: obj for obj in getattr(instance, field).all()}  # Fetch existing records
+        for field, model in related_fields.items():
+            if related_data[field] is not None:  # Only update if data is provided
+                getattr(instance, field).all().delete()  # Delete existing records
 
-            new_objects = []
-            updated_objects = []
-            seen_ids = set()
+                new_objects = [model(sell=instance, **{k: v for k, v in item.items() if k != "sell"}) for item in related_data[field]]
 
-            for item in new_records:
-                item_id = item.pop("id", None)  # Extract ID (if exists) and remove from dict
-                item.pop("sell", None)  # ✅ Prevent error by removing 'sell' from data
-
-                if item_id and item_id in existing_records:
-                    # ✅ Update existing records
-                    obj = existing_records[item_id]
-                    for key, val in item.items():
-                        setattr(obj, key, val)
-                    updated_objects.append(obj)
-                    seen_ids.add(item_id)
-                else:
-                    # ✅ Create new records
-                    new_objects.append(model(sell=instance, **item))
-
-            # ✅ Perform bulk update & create
-            if updated_objects:
-                model.objects.bulk_update(updated_objects, list(new_records[0].keys()) if new_records else [])
-
-            if new_objects:
-                model.objects.bulk_create(new_objects)
-
-            # ✅ Delete removed records
-            model.objects.filter(sell=instance).exclude(id__in=seen_ids).delete()
+                model.objects.bulk_create(new_objects)  # Bulk create new records
 
         return instance
 
@@ -152,13 +128,22 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date', 'mohajon_name','payment_description']
+        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date', 'mohajon_name','payment_description','payment_method','bank_name','account_number','cheque_number','mobile_banking_number']
 
     def create(self, validated_data):
         """ Override create method to update the Mohajon total_payment """
         payment = super().create(validated_data)
         # The save method in the Payment model already updates the total_payment
         return payment
+    
+    
+    
+class PaymentRecieveSerializer(serializers.ModelSerializer):
+    buyer_name = serializers.CharField(source='buyer.name', read_only=True)
+
+    class Meta:
+        model = PaymentRecieve
+        fields = '__all__'
 
 class EmployeePaymentSerializer(serializers.ModelSerializer):
     class Meta:
