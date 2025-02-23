@@ -12,8 +12,7 @@ SECRET_KEY = 'django-insecure-n8z-*_krzb15y8v_73-!0vc&0txghk_wg+7wzjmbyhr1ljnu=9
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ajoydutta.com', 'www.ajoydutta.com', '86.48.3.219', '127.0.0.1']
 
 
 # Application definition
@@ -47,16 +46,23 @@ MIDDLEWARE = [
 
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Local development URL
-    # Add other URLs if you want to allow them (e.g., production domain)
+    "http://localhost:5173", 
+    "https://ajoydutta.com",
+    "http://ajoydutta.com" 
+    
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False  # Set to False to restrict it to specific origins
 
 # For handling CSRF with cross-origin requests
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  # Trust this origin for CSRF
+    "http://localhost:5173", 
+    'https://ajoydutta.com',
+    'https://www.ajoydutta.com',
+    'http://127.0.0.1',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'NewAmin.urls'
 
