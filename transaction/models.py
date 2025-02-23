@@ -5,6 +5,8 @@ from .models import*
 from person.models import Mohajon,Customer
 from store.models import Product, GodownList, ShopBankInfo, BankMethod,Employee
 from decimal import Decimal 
+from datetime import datetime
+
 
 
 # Create your models here.
@@ -47,7 +49,7 @@ class PurchaseDetail(models.Model):
 
     
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2)
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2,blank=True, null=True)
     commission = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
 
@@ -62,8 +64,30 @@ class PurchaseDetail(models.Model):
         if isinstance(self.weight, str):
             self.weight = Decimal(self.weight)
 
+        self.commission = Decimal(self.commission) if self.commission else Decimal(0)
+
         # Perform multiplication
         self.total_amount = self.purchase_price * self.weight
+        self.sale_price = self.weight * (self.purchase_price + self.commission)
+
+        if not self.lot_number:
+            # Format today's date as DDMMYY (e.g., 200225 for Feb 20, 2025)
+            today_date = datetime.today().strftime('%d%m%y')
+
+            # Get the highest lot_number for today's date and bag_quantity
+            existing_lots = PurchaseDetail.objects.filter(
+                lot_number__startswith=f"{today_date}-{self.bag_quantity}-"
+            ).order_by('-lot_number')
+
+            if existing_lots.exists():
+                # Extract the last serial number and increment it
+                last_lot_number = existing_lots.first().lot_number
+                last_serial = int(last_lot_number.split('-')[-1]) + 1
+            else:
+                last_serial = 1
+
+            # Assign the new lot_number
+            self.lot_number = f"{today_date}-{self.bag_quantity}-{last_serial}"
 
         super().save(*args, **kwargs)
         self.purchase.update_total_amount()
@@ -197,10 +221,19 @@ class PaymentRecieve(models.Model):
 class Payment(models.Model):
     mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='payments')
     voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
+    transaction_type=models.CharField(max_length=255, blank=True, null=True) 
+
     payment_description=models.TextField(blank=True, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField() 
     code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+
+    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
+    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
+    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
+
 
     def save(self, *args, **kwargs):
         """ Update total_payment in Mohajon when a new payment is added """
@@ -224,10 +257,18 @@ class EmployeePayment(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payments')
     name = models.CharField(max_length=255, blank=True,null=True) 
     payment_description=models.TextField(blank=True, null=True)
+    transaction_type=models.CharField(max_length=255, blank=True, null=True) 
+
     voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField() 
     code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+
+    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
+    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
+    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
 
     def save(self, *args, **kwargs):
         if not self.code:
@@ -243,13 +284,18 @@ class EmployeePayment(models.Model):
         super(EmployeePayment, self).save(*args, **kwargs)
 
 class OtherPayment(models.Model):
-    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='other_payments')
     voucher = models.CharField(max_length=50, blank=True, null=True)  # Voucher number (Optional)
     payment_description=models.TextField(blank=True, null=True)
     transaction_type=models.CharField(max_length=255, blank=True, null=True) 
     amount = models.DecimalField(max_digits=12, decimal_places=2)  # Payment amount
     date = models.DateField() 
     code = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Unique payment code
+
+    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
+    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
+    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
 
     def save(self, *args, **kwargs):
         if not self.code:

@@ -113,6 +113,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False, allow_null=True)  # Allow optional image
+
     class Meta:
         model = Product
         fields = ['id', 'name', 'image', 'code']

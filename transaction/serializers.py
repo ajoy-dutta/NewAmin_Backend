@@ -124,11 +124,10 @@ class SellSerializer(serializers.ModelSerializer):
         return instance
 
 class PaymentSerializer(serializers.ModelSerializer):
-    mohajon_name = serializers.CharField(source='mohajon.name')  # To get Mohajon's name
 
     class Meta:
         model = Payment
-        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date', 'mohajon_name','payment_description']
+        fields = '__all__'
 
     def create(self, validated_data):
         """ Override create method to update the Mohajon total_payment """
