@@ -11,8 +11,7 @@ admin.site.register(ProductSellInfo)
 admin.site.register(CostInfo)
 admin.site.register(IncomeInfo)
 admin.site.register(Payment)
-admin.site.register(EmployeePayment)
-admin.site.register(OtherPayment)
+admin.site.register(PaymentDetail)
 
 
 

@@ -123,17 +123,6 @@ class SellSerializer(serializers.ModelSerializer):
 
         return instance
 
-class PaymentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Payment
-        fields = ['id', 'mohajon','code', 'voucher', 'amount', 'date','payment_description','payment_method','bank_name','account_number','cheque_number','mobile_banking_number']
-
-    def create(self, validated_data):
-        """ Override create method to update the Mohajon total_payment """
-        payment = super().create(validated_data)
-        # The save method in the Payment model already updates the total_payment
-        return payment
     
     
     
@@ -144,13 +133,38 @@ class PaymentRecieveSerializer(serializers.ModelSerializer):
         model = PaymentRecieve
         fields = '__all__'
 
-class EmployeePaymentSerializer(serializers.ModelSerializer):
+class PaymentDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EmployeePayment
+        model = PaymentDetail
+        fields = '__all__'
+        extra_kwargs = {
+                    'payment_header': {'read_only': True}, 
+                }
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    details = PaymentDetailSerializer(many=True)
+
+    class Meta:
+        model = Payment
         fields = '__all__'
 
-class OtherPaymentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OtherPayment
-        fields = '__all__'
 
+    def create(self, validated_data):
+        details_data = validated_data.pop('details', [])
+        payment = Payment.objects.create(**validated_data)
+        for detail_data in details_data:
+            PaymentDetail.objects.create(payment_header=payment, **detail_data)
+        return payment
+
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop('details', None)
+        instance.date = validated_data.get('date', instance.date)
+        instance.voucher = validated_data.get('voucher', instance.voucher)
+        instance.save()
+
+        if details_data is not None:
+            instance.details.all().delete()
+            for detail_data in details_data:
+                PaymentDetail.objects.create(payment_header=instance, **detail_data)
+        return instance

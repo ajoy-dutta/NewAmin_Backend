@@ -5,6 +5,8 @@ from .models import*
 from person.models import Mohajon,Customer
 from store.models import Product, GodownList, ShopBankInfo, BankMethod,Employee
 from decimal import Decimal 
+from datetime import datetime
+
 
 
 # Create your models here.
@@ -47,7 +49,7 @@ class PurchaseDetail(models.Model):
 
     
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2)
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2,blank=True, null=True)
     commission = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
 
@@ -62,8 +64,32 @@ class PurchaseDetail(models.Model):
         if isinstance(self.weight, str):
             self.weight = Decimal(self.weight)
 
+        self.commission = Decimal(self.commission) if self.commission else Decimal(0)
+
         # Perform multiplication
         self.total_amount = self.purchase_price * self.weight
+        self.sale_price = self.weight * (self.purchase_price + self.commission)
+
+        if not self.lot_number:
+            # Use the purchase date if available; otherwise, use today's date.
+            if self.purchase and self.purchase.date:
+                # If self.purchase.date is a datetime, extract the date portion:
+                date_obj = self.purchase.date.date() if hasattr(self.purchase.date, 'date') else self.purchase.date
+                date_str = date_obj.strftime('%d%m%y')
+            else:
+                date_str = datetime.today().strftime('%d%m%y')
+            
+            # Count existing details for this product on the same purchase date
+            existing_count = PurchaseDetail.objects.filter(
+                purchase__date=self.purchase.date,
+                # product=self.product
+            ).count()
+            
+            # The new sequence number starts at 1 for a new date
+            new_sequence = existing_count + 1
+            
+            # Build the lot number as: date_str - bag_quantity - new_sequence
+            self.lot_number = f"{date_str}-{self.bag_quantity}-{new_sequence}"
 
         super().save(*args, **kwargs)
         self.purchase.update_total_amount()
@@ -83,7 +109,6 @@ class TransactionDetail(models.Model):
 
     def __str__(self):
         return f"{self.transaction_type} - {self.additional_cost_amount}"  # Fixed issue
-
 
 
 ## sell method
@@ -195,89 +220,36 @@ class PaymentRecieve(models.Model):
     
 
 class Payment(models.Model):
-    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='payments')
-    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
-    payment_description=models.TextField(blank=True, null=True)
+    date = models.DateField()
+    voucher = models.CharField(max_length=50, blank=True, null=True)
+    code = models.CharField(max_length=50, unique=True, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            last_payment = Payment.objects.order_by('id').last()  # ✅ Use Payment instead of PaymentHeader
+            new_id = last_payment.id + 1 if last_payment else 1
+            self.code = f"P{new_id:07}"
+        super().save(*args, **kwargs)
+
+
+
+class PaymentDetail(models.Model):
+  
+    payment_header = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="details")
+    
+    payment_type = models.CharField(max_length=255, blank=True, null=True)
+    
+    payment_description = models.TextField(blank=True, null=True)
+    transaction_type = models.CharField(max_length=255, blank=True, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField() 
-    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+    
+    bank_name = models.CharField(max_length=255, blank=True, null=True)
+    account_number = models.CharField(max_length=100, blank=True, null=True)
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)
 
-    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
-    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
-    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
-    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
-    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
+    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, blank=True, null=True, related_name="payment_details")
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True, related_name="payment_details")
 
-
-    def save(self, *args, **kwargs):
-        """ Update total_payment in Mohajon when a new payment is added """
-        super(Payment, self).save(*args, **kwargs)
-        self.mohajon.total_payment += self.amount
-        self.mohajon.save(update_fields=['total_payment'])  # Update only total_payment
-        if not self.code:
-            last_payment = Payment.objects.order_by('id').last()
-
-            if last_payment:
-                new_user_id = last_payment.id + 1
-            else:
-                new_user_id = 1
-
-            self.code = f"P{new_user_id:07}"
-
-        super(Payment, self).save(*args, **kwargs)
-
-
-class EmployeePayment(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payments')
-    name = models.CharField(max_length=255, blank=True,null=True) 
-    payment_description=models.TextField(blank=True, null=True)
-    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField() 
-    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
-
-    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
-    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
-    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
-    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
-    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            last_payment = EmployeePayment.objects.order_by('id').last()
-
-            if last_payment:
-                new_user_id = last_payment.id + 1
-            else:
-                new_user_id = 1
-
-            self.code = f"P{new_user_id:07}"
-
-        super(EmployeePayment, self).save(*args, **kwargs)
-
-class OtherPayment(models.Model):
-    voucher = models.CharField(max_length=50, blank=True, null=True)  # Voucher number (Optional)
-    payment_description=models.TextField(blank=True, null=True)
-    transaction_type=models.CharField(max_length=255, blank=True, null=True) 
-    amount = models.DecimalField(max_digits=12, decimal_places=2)  # Payment amount
-    date = models.DateField() 
-    code = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Unique payment code
-
-    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
-    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
-    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
-    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
-    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            last_payment = OtherPayment.objects.order_by('id').last()
-
-            if last_payment:
-                new_user_id = last_payment.id + 1
-            else:
-                new_user_id = 1
-
-            self.code = f"O{new_user_id:07}"
-
-        super(OtherPayment, self).save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.payment_header.code} - {self.payment_type} - {self.amount}"
