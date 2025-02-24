@@ -88,8 +88,21 @@ class SellSerializer(serializers.ModelSerializer):
 
         sell = Sell.objects.create(**validated_data)
 
+        # Create ProductSellInfo records and adjust Purchase quantities
         for product in product_sell_data:
-            ProductSellInfo.objects.create(sell=sell, **product)
+            product_sell_info = ProductSellInfo.objects.create(sell=sell, **product)
+
+            lot_number = product_sell_info.lot_number
+            try:
+                purchaseDetail = PurchaseDetail.objects.get(lot_number=lot_number)
+                purchaseDetail.bag_quantity -= product_sell_info.sale_bag_quantity
+                purchaseDetail.weight -= product_sell_info.sale_weight
+                if purchaseDetail.bag_quantity < 0 or purchaseDetail.weight < 0:
+                    raise ValueError("Not enough inventory to complete the sale.")
+                purchaseDetail.save()
+            except Purchase.DoesNotExist:
+                raise ValueError(f"No purchase record found for lot number {lot_number}")
+
 
         for cost in cost_info_data:
             CostInfo.objects.create(sell=sell, **cost)
@@ -122,6 +135,9 @@ class SellSerializer(serializers.ModelSerializer):
                 model.objects.bulk_create(new_objects)  # Bulk create new records
 
         return instance
+
+
+
 
 class PaymentSerializer(serializers.ModelSerializer):
 
