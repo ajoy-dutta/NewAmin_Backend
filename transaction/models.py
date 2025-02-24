@@ -9,34 +9,38 @@ from datetime import datetime
 
 
 
-# Create your models here.
+# Create your models here
 
 class Purchase(models.Model):
     date = models.DateField(default=now)
-    receipt_number = models.CharField(max_length=100, unique=True, blank=True,null = True)
+    receipt_number = models.CharField(max_length=100, unique=True, blank=True, null=True)
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'), ('বেপারী/চাষী', 'বেপারী/চাষী')]) 
     buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="purchases")
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
-    def __str__(self):
-        return f"Receipt {self.receipt_number} ({self.date})"
+    def update_total_amount(self):
+        """ Updates total_amount by summing all related PurchaseDetails """
+        total = self.purchase_details.aggregate(total=Sum('total_amount'))['total'] or Decimal(0)
+        self.total_amount = total
+        self.save(update_fields=['total_amount'])
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:
             last_purchase = Purchase.objects.order_by('id').last()
-
-            if last_purchase:
-                new_user_id = last_purchase.id + 1
-            else:
-                new_user_id = 1
-
+            new_user_id = last_purchase.id + 1 if last_purchase else 1
             self.receipt_number = f"PP{new_user_id:07}"
 
         super(Purchase, self).save(*args, **kwargs)
+        self.buyer_name.update_total_purchases()
 
-    def update_total_amount(self):
-        self.total_amount = self.purchase_details.aggregate(total=Sum('total_amount'))['total'] or 0
-        self.save()
+    def delete(self, *args, **kwargs):
+        """ Ensure total_purchases updates when a Purchase is deleted """
+        buyer = self.buyer_name
+        super().delete(*args, **kwargs)
+        buyer.update_total_purchases()
+
+    def __str__(self):
+        return f"Receipt {self.receipt_number} ({self.date})"
 
 class PurchaseDetail(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="purchase_details")  
@@ -92,8 +96,14 @@ class PurchaseDetail(models.Model):
             self.lot_number = f"{date_str}-{self.bag_quantity}-{new_sequence}"
 
         super().save(*args, **kwargs)
+
         self.purchase.update_total_amount()
 
+        def delete(self, *args, **kwargs):
+            """ Update total_amount in Purchase when a PurchaseDetail is deleted """
+            purchase = self.purchase
+            super().delete(*args, **kwargs)
+            purchase.update_total_amount()
 
     def __str__(self):
         return f"{self.product.name} ({self.weight} kg)"
@@ -249,7 +259,20 @@ class PaymentDetail(models.Model):
     mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)
 
     mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, blank=True, null=True, related_name="payment_details")
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True, related_name="payment_details")
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True, related_name="employee_payment_details")
+    
+    def save(self, *args, **kwargs):
+        """ Ensure total_payment updates when a payment is saved """
+        super().save(*args, **kwargs)
+        if self.mohajon:
+            self.mohajon.update_total_payment()
+
+    def delete(self, *args, **kwargs):
+        """ Ensure total_payment updates when a payment is deleted """
+        mohajon = self.mohajon
+        super().delete(*args, **kwargs)
+        if mohajon:
+            mohajon.update_total_payment()
 
     def __str__(self):
         return f"{self.payment_header.code} - {self.payment_type} - {self.amount}"

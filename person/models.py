@@ -1,6 +1,9 @@
 from django.db import models
 from .models import*
 from store.models import ShopBankInfo  # Import ShopBankInfo from the store app
+from django.db.models import Sum
+from decimal import Decimal
+
 
 class Mohajon(models.Model):
     name = models.CharField(max_length=255)
@@ -48,8 +51,30 @@ class Mohajon(models.Model):
     previous_account = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     khatian_number = models.CharField(max_length=50, blank=True, null=True)
         
-    total_payment = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # New field to track total payments
+    # Financial Fields
+    total_payment = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # Total payments received
+    total_purchases = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # Total purchases
+    due_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # ✅ New Field
 
+    def update_total_payment(self):
+        """ Updates total_payment by summing all related PaymentDetails """
+        total_payments = self.payment_details.aggregate(total=Sum('amount'))['total'] or Decimal(0)
+        self.total_payment = total_payments
+        self.save(update_fields=['total_payment'])
+        self.update_due_amount()  # ✅ Update due_amount after updating payments
+
+    def update_total_purchases(self):
+        """ Updates total_purchases by summing all related Purchases total_amount """
+        total = self.purchases.aggregate(total=Sum('total_amount'))['total'] or Decimal(0)
+        self.total_purchases = total
+        self.save(update_fields=['total_purchases'])
+        self.update_due_amount()  # ✅ Update due_amount after updating purchases
+
+    def update_due_amount(self):
+        """ Calculates due_amount = previous_account + total_purchases - total_payment """
+        self.due_amount = (self.previous_account or Decimal(0)) + self.total_purchases - self.total_payment
+        self.save(update_fields=['due_amount'])
+    
         
     def save(self, *args, **kwargs):
         if not self.code:
