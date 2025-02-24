@@ -9,34 +9,38 @@ from datetime import datetime
 
 
 
-# Create your models here.
+# Create your models here
 
 class Purchase(models.Model):
     date = models.DateField(default=now)
-    receipt_number = models.CharField(max_length=100, unique=True, blank=True,null = True)
+    receipt_number = models.CharField(max_length=100, unique=True, blank=True, null=True)
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'), ('বেপারী/চাষী', 'বেপারী/চাষী')]) 
     buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="purchases")
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
-    def __str__(self):
-        return f"Receipt {self.receipt_number} ({self.date})"
+    def update_total_amount(self):
+        """ Updates total_amount by summing all related PurchaseDetails """
+        total = self.purchase_details.aggregate(total=Sum('total_amount'))['total'] or Decimal(0)
+        self.total_amount = total
+        self.save(update_fields=['total_amount'])
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:
             last_purchase = Purchase.objects.order_by('id').last()
-
-            if last_purchase:
-                new_user_id = last_purchase.id + 1
-            else:
-                new_user_id = 1
-
+            new_user_id = last_purchase.id + 1 if last_purchase else 1
             self.receipt_number = f"PP{new_user_id:07}"
 
         super(Purchase, self).save(*args, **kwargs)
+        self.buyer_name.update_total_purchases()
 
-    def update_total_amount(self):
-        self.total_amount = self.purchase_details.aggregate(total=Sum('total_amount'))['total'] or 0
-        self.save()
+    def delete(self, *args, **kwargs):
+        """ Ensure total_purchases updates when a Purchase is deleted """
+        buyer = self.buyer_name
+        super().delete(*args, **kwargs)
+        buyer.update_total_purchases()
+
+    def __str__(self):
+        return f"Receipt {self.receipt_number} ({self.date})"
 
 class PurchaseDetail(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="purchase_details")  
@@ -71,27 +75,35 @@ class PurchaseDetail(models.Model):
         self.sale_price = self.weight * (self.purchase_price + self.commission)
 
         if not self.lot_number:
-            # Format today's date as DDMMYY (e.g., 200225 for Feb 20, 2025)
-            today_date = datetime.today().strftime('%d%m%y')
-
-            # Get the highest lot_number for today's date and bag_quantity
-            existing_lots = PurchaseDetail.objects.filter(
-                lot_number__startswith=f"{today_date}-{self.bag_quantity}-"
-            ).order_by('-lot_number')
-
-            if existing_lots.exists():
-                # Extract the last serial number and increment it
-                last_lot_number = existing_lots.first().lot_number
-                last_serial = int(last_lot_number.split('-')[-1]) + 1
+            # Use the purchase date if available; otherwise, use today's date.
+            if self.purchase and self.purchase.date:
+                # If self.purchase.date is a datetime, extract the date portion:
+                date_obj = self.purchase.date.date() if hasattr(self.purchase.date, 'date') else self.purchase.date
+                date_str = date_obj.strftime('%d%m%y')
             else:
-                last_serial = 1
-
-            # Assign the new lot_number
-            self.lot_number = f"{today_date}-{self.bag_quantity}-{last_serial}"
+                date_str = datetime.today().strftime('%d%m%y')
+            
+            # Count existing details for this product on the same purchase date
+            existing_count = PurchaseDetail.objects.filter(
+                purchase__date=self.purchase.date,
+                # product=self.product
+            ).count()
+            
+            # The new sequence number starts at 1 for a new date
+            new_sequence = existing_count + 1
+            
+            # Build the lot number as: date_str - bag_quantity - new_sequence
+            self.lot_number = f"{date_str}-{self.bag_quantity}-{new_sequence}"
 
         super().save(*args, **kwargs)
+
         self.purchase.update_total_amount()
 
+        def delete(self, *args, **kwargs):
+            """ Update total_amount in Purchase when a PurchaseDetail is deleted """
+            purchase = self.purchase
+            super().delete(*args, **kwargs)
+            purchase.update_total_amount()
 
     def __str__(self):
         return f"{self.product.name} ({self.weight} kg)"
@@ -107,7 +119,6 @@ class TransactionDetail(models.Model):
 
     def __str__(self):
         return f"{self.transaction_type} - {self.additional_cost_amount}"  # Fixed issue
-
 
 
 ## sell method
@@ -219,93 +230,49 @@ class PaymentRecieve(models.Model):
     
 
 class Payment(models.Model):
-    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name='payments')
-    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
-    transaction_type=models.CharField(max_length=255, blank=True, null=True) 
+    date = models.DateField()
+    voucher = models.CharField(max_length=50, blank=True, null=True)
+    code = models.CharField(max_length=50, unique=True, blank=True, null=True)
 
-    payment_description=models.TextField(blank=True, null=True)
+    def save(self, *args, **kwargs):
+        if not self.code:
+            last_payment = Payment.objects.order_by('id').last()  # ✅ Use Payment instead of PaymentHeader
+            new_id = last_payment.id + 1 if last_payment else 1
+            self.code = f"P{new_id:07}"
+        super().save(*args, **kwargs)
+
+
+
+class PaymentDetail(models.Model):
+  
+    payment_header = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="details")
+    
+    payment_type = models.CharField(max_length=255, blank=True, null=True)
+    
+    payment_description = models.TextField(blank=True, null=True)
+    transaction_type = models.CharField(max_length=255, blank=True, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField() 
-    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
+    
+    bank_name = models.CharField(max_length=255, blank=True, null=True)
+    account_number = models.CharField(max_length=100, blank=True, null=True)
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)
+    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)
 
-    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
-    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
-    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
-    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
-    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
-
-
+    mohajon = models.ForeignKey(Mohajon, on_delete=models.CASCADE, blank=True, null=True, related_name="payment_details")
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True, related_name="employee_payment_details")
+    
     def save(self, *args, **kwargs):
-        """ Update total_payment in Mohajon when a new payment is added """
-        super(Payment, self).save(*args, **kwargs)
-        self.mohajon.total_payment += self.amount
-        self.mohajon.save(update_fields=['total_payment'])  # Update only total_payment
-        if not self.code:
-            last_payment = Payment.objects.order_by('id').last()
+        """ Ensure total_payment updates when a payment is saved """
+        super().save(*args, **kwargs)
+        if self.mohajon:
+            self.mohajon.update_total_payment()
 
-            if last_payment:
-                new_user_id = last_payment.id + 1
-            else:
-                new_user_id = 1
+    def delete(self, *args, **kwargs):
+        """ Ensure total_payment updates when a payment is deleted """
+        mohajon = self.mohajon
+        super().delete(*args, **kwargs)
+        if mohajon:
+            mohajon.update_total_payment()
 
-            self.code = f"P{new_user_id:07}"
-
-        super(Payment, self).save(*args, **kwargs)
-
-
-class EmployeePayment(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payments')
-    name = models.CharField(max_length=255, blank=True,null=True) 
-    payment_description=models.TextField(blank=True, null=True)
-    transaction_type=models.CharField(max_length=255, blank=True, null=True) 
-
-    voucher = models.CharField(max_length=50, blank=True,null=True)  # Voucher number
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField() 
-    code = models.CharField(max_length=50, unique=True,blank=True,null=True)
-
-    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
-    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
-    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
-    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
-    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            last_payment = EmployeePayment.objects.order_by('id').last()
-
-            if last_payment:
-                new_user_id = last_payment.id + 1
-            else:
-                new_user_id = 1
-
-            self.code = f"P{new_user_id:07}"
-
-        super(EmployeePayment, self).save(*args, **kwargs)
-
-class OtherPayment(models.Model):
-    voucher = models.CharField(max_length=50, blank=True, null=True)  # Voucher number (Optional)
-    payment_description=models.TextField(blank=True, null=True)
-    transaction_type=models.CharField(max_length=255, blank=True, null=True) 
-    amount = models.DecimalField(max_digits=12, decimal_places=2)  # Payment amount
-    date = models.DateField() 
-    code = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Unique payment code
-
-    payment_method = models.CharField(max_length=255, blank=True, null=True)  #method selection
-    bank_name = models.CharField(max_length=255, blank=True, null=True)  # ব্যাংকের নাম
-    account_number = models.CharField(max_length=100, blank=True, null=True)  # হিসাব নং
-    cheque_number = models.CharField(max_length=100, blank=True, null=True)  # চেক নং
-    mobile_banking_number = models.CharField(max_length=15, blank=True, null=True)  # ব্যাংকিং মোবাইল নং
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            last_payment = OtherPayment.objects.order_by('id').last()
-
-            if last_payment:
-                new_user_id = last_payment.id + 1
-            else:
-                new_user_id = 1
-
-            self.code = f"O{new_user_id:07}"
-
-        super(OtherPayment, self).save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.payment_header.code} - {self.payment_type} - {self.amount}"
