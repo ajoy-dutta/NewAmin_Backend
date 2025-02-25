@@ -36,6 +36,8 @@ class Purchase(models.Model):
     def delete(self, *args, **kwargs):
         """ Ensure total_purchases updates when a Purchase is deleted """
         buyer = self.buyer_name
+        print(f"Deleting PaymentDetail for Mohajon: {buyer}")  # Debugging Line
+
         super().delete(*args, **kwargs)
         buyer.update_total_purchases()
 
@@ -58,21 +60,6 @@ class PurchaseDetail(models.Model):
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Ensure both purchase_price and weight are not None
-        if self.purchase_price is None or self.weight is None:
-            raise ValueError("purchase_price and weight must be provided")
-
-        # Convert to Decimal if they are strings
-        if isinstance(self.purchase_price, str):
-            self.purchase_price = Decimal(self.purchase_price)
-        if isinstance(self.weight, str):
-            self.weight = Decimal(self.weight)
-
-        self.commission = Decimal(self.commission) if self.commission else Decimal(0)
-
-        # Perform multiplication
-        self.total_amount = self.purchase_price * self.weight
-        self.sale_price = self.weight * (self.purchase_price + self.commission)
 
         if not self.lot_number:
             # Use the purchase date if available; otherwise, use today's date.
@@ -244,7 +231,6 @@ class Payment(models.Model):
 
 
 class PaymentDetail(models.Model):
-  
     payment_header = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="details")
     
     payment_type = models.CharField(max_length=255, blank=True, null=True)
@@ -269,10 +255,13 @@ class PaymentDetail(models.Model):
 
     def delete(self, *args, **kwargs):
         """ Ensure total_payment updates when a payment is deleted """
-        mohajon = self.mohajon
-        super().delete(*args, **kwargs)
+        mohajon = self.mohajon  # ✅ Store reference before deleting
+        print(f"Deleting PaymentDetail for Mohajon: {mohajon}")  # Debugging Line
+        super().delete(*args, **kwargs)  # Delete the PaymentDetail object
         if mohajon:
+            print("Updating total_payment after deletion...")  # Debugging Line
             mohajon.update_total_payment()
+
 
     def __str__(self):
         return f"{self.payment_header.code} - {self.payment_type} - {self.amount}"

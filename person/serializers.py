@@ -1,6 +1,86 @@
 from rest_framework import serializers
 from .models import*
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from rest_framework.exceptions import AuthenticationFailed
 
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = get_user_model()
+        fields = ('username', 'profile_picture', 'email', 'password', 'confirm_password', 'phone')
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Password doesn't match")
+        return data
+
+    def create(self, validated_data):
+        validated_data.pop('confirm_password')
+        User = get_user_model()
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password'],
+            email=validated_data['email'],
+            phone=validated_data.get('phone')  # Assign phone field
+        )
+        if 'profile_picture' in validated_data:
+            user.profile_picture = validated_data['profile_picture']
+        user.is_approved = False
+        user.save()
+        return user
+
+
+
+class StaffApproveSerializer(serializers.ModelSerializer):    
+    class Meta:
+        model=get_user_model()
+        fields=('id','username','email','is_approved','role','phone')
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+
+        # Check if the user is approved
+        if not user.is_approved:
+            raise AuthenticationFailed("Your account has not been approved yet.")
+
+        return data
+
+# class PasswordChangeSerializer(serializers.Serializer):
+#     current_password = serializers.CharField(required=True)
+#     new_password = serializers.CharField(required=True)
+#     confirm_new_password = serializers.CharField(required=True)
+
+#     def validate(self, data):
+#         user = self.context['request'].user
+
+#         # Validate current password
+#         if not check_password(data['current_password'], user.password):
+#             raise serializers.ValidationError({"current_password": "Current password is incorrect"})
+
+#         # Validate new password and confirmation match
+#         if data['new_password'] != data['confirm_new_password']:
+#             raise serializers.ValidationError({"new_password": "New passwords do not match"})
+
+#         # Validate password complexity
+#         try:
+#             validate_password(data['new_password'], user=user)
+#         except serializers.ValidationError as e:
+#             raise serializers.ValidationError({"new_password": e.messages})
+
+#         return data
+    
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ['id', 'username', 'email', 'role', 'is_approved', 'profile_picture']
+        
 class BankInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = BankInfo
