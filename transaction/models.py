@@ -131,7 +131,7 @@ class Sell(models.Model):
             
         
     def __str__(self):
-        return f"Sell {self.receipt_no} - {self.buyer_name}"
+        return f"Sell {self.receipt_no} - {self.buyer}"
 
 
 
@@ -153,7 +153,7 @@ class ProductSellInfo(models.Model):
     
     
     def __str__(self):
-        return f"{self.product_name} ({self.sell.receipt_no})"
+        return f"{self.product} ({self.sell.receipt_no})"
 
 
 
@@ -164,7 +164,7 @@ class CostInfo(models.Model):
     costDescription = models.TextField(max_length=500, null= True)
     
     def __str__(self):
-        return f"Cost {self.sell.receipt_no} - {self.transaction_category}"
+        return f"Cost {self.sell.receipt_no} - {self.cost_type}"
 
 
 
