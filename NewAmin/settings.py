@@ -89,6 +89,7 @@ WSGI_APPLICATION = 'NewAmin.wsgi.application'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     # Uncomment below if you want to enforce authentication for all views

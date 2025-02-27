@@ -12,7 +12,6 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        # If the user is a superuser, set their role to 'NDC' and is_approved to True
         if self.is_superuser:
             self.role = 'admin'
             self.is_approved = True
