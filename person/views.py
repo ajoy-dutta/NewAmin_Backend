@@ -20,6 +20,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 
 User=get_user_model()
 
@@ -48,25 +49,54 @@ class StaffListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = StaffApproveSerializer
 
-class StaffApproveView(generics.UpdateAPIView):
+class StaffApproveView(generics.RetrieveUpdateDestroyAPIView):  # GET, PUT, DELETE
     queryset = User.objects.all()
     serializer_class = StaffApproveSerializer
+    # lookup_field = "id"  # Users will be accessed using their ID
 
     def update(self, request, *args, **kwargs):
-        user = self.get_object()  # Get the specific User instance
-        user.is_approved = request.data.get('is_approved', user.is_approved)  # Update is_approved field
-        user.save()  # Save the updated user instance
-        return Response({"message": f"User {user.username} approval status updated successfully."}, status=status.HTTP_200_OK)
-    def delete(self,request,*args,**kwargs):
+        """Update user's approval status"""
+        user = self.get_object()
+
+        # Convert "true"/"false" strings to actual boolean values
+        is_approved = request.data.get("is_approved")
+        if isinstance(is_approved, str):
+            is_approved = is_approved.lower() == "true"
+
         try:
-            user=self.get_object()
-            user.delete()
-            return Response({"message": f"User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-        except User.DoesNotExist:
-            return Response({"error":"User doesn't exist"},status=status.HTTP_404_NOT_FOUND )
+            user.is_approved = is_approved
+            user.save()
+            return Response(
+                {"message": f"User {user.username} approval status updated successfully."},
+                status=status.HTTP_200_OK,
+            )
+        except IntegrityError:
+            return Response(
+                {"error": "Database integrity error. Check related data."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def delete(self, request, *args, **kwargs):
+        """Delete the user"""
+        user = self.get_object()
+        user.delete()
+        return Response(
+            {"message": f"User {user.username} deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+class UserProfileView(APIView):
+    # permission_classes = [IsAuthenticated]  
+    
+    def get(self, request):
+        if request.user.is_authenticated:
+            serializer = UserProfileSerializer(request.user)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "User not authenticated"}, status=401)
 
 class MohajonListCreateAPIView(generics.ListCreateAPIView):
     queryset = Mohajon.objects.all()
