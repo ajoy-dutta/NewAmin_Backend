@@ -265,3 +265,25 @@ class PaymentDetail(models.Model):
 
     def __str__(self):
         return f"{self.payment_header.code} - {self.payment_type} - {self.amount}"
+    
+
+ 
+class Invoice(models.Model):
+    # Translated field names for clarity
+    date = models.DateField()
+    product_name = models.CharField(max_length=255)
+    bereft = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='invoices')
+    godown_name = models.CharField(max_length=255)
+    lot_number = models.CharField(max_length=255)
+    advance = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    payment_due = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    labor_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    tax = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    van_rent = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    vehicle_rent = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    station_expense = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    other_cost_1 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    other_cost_2 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return f"Invoice for {self.product_name} ({self.date})"

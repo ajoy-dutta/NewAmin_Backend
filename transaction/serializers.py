@@ -180,3 +180,11 @@ class PaymentSerializer(serializers.ModelSerializer):
             for detail_data in details_data:
                 PaymentDetail.objects.create(payment_header=instance, **detail_data)
         return instance
+    
+    
+class InvoiceSerializer(serializers.ModelSerializer):
+    bereft_name = serializers.CharField(source='bereft.name', read_only=True)
+    
+    class Meta:
+        model = Invoice
+        fields = '__all__'
