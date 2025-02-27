@@ -14,7 +14,6 @@ SECRET_KEY = 'django-insecure-n8z-*_krzb15y8v_73-!0vc&0txghk_wg+7wzjmbyhr1ljnu=9
 DEBUG = True
 ALLOWED_HOSTS = ['ajoydutta.com', 'www.ajoydutta.com', '86.48.3.219', '127.0.0.1']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -34,6 +33,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -65,6 +65,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'NewAmin.urls'
+AUTH_USER_MODEL = 'person.User'
+
 
 TEMPLATES = [
     {
