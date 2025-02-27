@@ -35,11 +35,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-
-class StaffApproveSerializer(serializers.ModelSerializer):    
+class StaffApproveSerializer(serializers.ModelSerializer):
     class Meta:
-        model=get_user_model()
-        fields=('id','username','email','is_approved','role','phone')
+        model = User
+        fields = ["id", "username", "email", "role", "is_approved", "phone", "profile_picture"]
+        # read_only_fields = ["id", "username", "email", "role"]  # Prevent modification of certain fields
+
+    def update(self, instance, validated_data):
+        """Ensure 'is_approved' is updated properly"""
+        is_approved = validated_data.get("is_approved", instance.is_approved)
+
+        if isinstance(is_approved, str):  # Handle "true"/"false" as string input
+            is_approved = is_approved.lower() == "true"
+
+        instance.is_approved = is_approved
+        instance.save()
+        return instance
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -76,10 +87,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 #         return data
     
-# class UserProfileSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'username', 'email', 'role', 'is_approved', 'profile_picture']
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'role', 'is_approved', 'profile_picture']
         
 class BankInfoSerializer(serializers.ModelSerializer):
     class Meta:
