@@ -28,6 +28,10 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'admin'
 
+# class IsAdminOrAuthenticated(BasePermission):
+#     def has_permission(self, request, view):
+#         # Allow access if user is authenticated or has admin role
+#         return request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
 
 class UserRegistrationView(ListCreateAPIView):
     queryset = User.objects.all()  # Replace `User` with your model name
@@ -97,6 +101,26 @@ class UserProfileView(APIView):
             return Response(serializer.data)
         else:
             return Response({"error": "User not authenticated"}, status=401)
+
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]  # Only authenticated users can access this view
+
+    def post(self, request):
+        # Create the serializer with data and context
+        print(request.data)
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication is required."}, status=401)  # Unauthorized
+
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
+        # Check if the data is valid
+        if serializer.is_valid():
+            serializer.save()  # Save the new password
+            return Response({"detail": "Password updated successfully."})
+
+        # If the serializer is invalid, print the errors for debugging
+        print("Validation errors:", serializer.errors)
+
+        return Response(serializer.errors, status=400)  # Return 400 with error
 
 class MohajonListCreateAPIView(generics.ListCreateAPIView):
     queryset = Mohajon.objects.all()
