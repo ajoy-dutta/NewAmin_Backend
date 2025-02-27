@@ -146,7 +146,7 @@ class ProductSellInfo(models.Model):
     sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Product_sell_info")
     product = models.ForeignKey(Product, on_delete=models.CASCADE,blank=True, null= True, related_name="Product" )
     bereft_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="bereft_name")
-    godown_name = models.ForeignKey(GodownList, on_delete=models.CASCADE, related_name="GodownList")
+    godown_name = models.ForeignKey(GodownList, on_delete=models.CASCADE, related_name="warehouse_name",blank=True, null= True)
     lot_number = models.CharField(max_length=50)
     bag_quantity = models.IntegerField(default=0)
     weight = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

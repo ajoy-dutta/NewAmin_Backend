@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from store.models import *
 
 class TransactionDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -57,7 +58,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
 class ProductSellInfoSerializer(serializers.ModelSerializer):
     
     product_name = serializers.CharField(source="product.name", read_only=True)  
-    # godown_name = serializers.CharField(source="godown_name.godown_name", read_only=True) 
+    godown_name = serializers.CharField(source="godown_name.godown_name", read_only=True) 
     
     class Meta:
         model = ProductSellInfo
@@ -99,6 +100,7 @@ class SellSerializer(serializers.ModelSerializer):
 
         # Create ProductSellInfo records and adjust Purchase quantities
         for product in product_sell_data:
+            print(product)
             product_sell_info = ProductSellInfo.objects.create(sell=sell, **product)
 
             lot_number = product_sell_info.lot_number
@@ -146,7 +148,6 @@ class SellSerializer(serializers.ModelSerializer):
         return instance
 
 
-    
     
 class PaymentRecieveSerializer(serializers.ModelSerializer):
     buyer_name = serializers.CharField(source='buyer.name', read_only=True)
