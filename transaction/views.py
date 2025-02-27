@@ -147,3 +147,13 @@ class PaymentRecieveRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
 class PaymentListCreateView(generics.ListCreateAPIView):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    
+
+class InvoiceListCreateView(generics.ListCreateAPIView):
+    queryset = Invoice.objects.all() 
+    serializer_class = InvoiceSerializer
+    
+    
+class InvoiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Invoice.objects.all() 
+    serializer_class = InvoiceSerializer

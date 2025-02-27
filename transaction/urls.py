@@ -13,6 +13,10 @@ urlpatterns = [
     path('payments-recieve/<int:pk>/', PaymentRecieveRetrieveUpdateDestroyView.as_view(), name='paymentRecieve-detail'),
     
     path('payments/', PaymentListCreateView.as_view(), name='payment-list-create'),
+    
+    
+    path('invoices/', InvoiceListCreateView.as_view(), name='invoice'),
+    path('invoices/<int:pk>/', InvoiceRetrieveUpdateDestroyView.as_view(), name='invoice-detail'),
 
 
 
