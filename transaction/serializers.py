@@ -56,9 +56,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 
 class ProductSellInfoSerializer(serializers.ModelSerializer):
-    
-    product_name = serializers.CharField(source="product.name", read_only=True)  
-    godown_name = serializers.CharField(source="godown_name.godown_name", read_only=True) 
+    product_name = serializers.CharField(source="product.name", read_only=True) 
+    godown = serializers.CharField(source="godown_name.godown_name", read_only = True)  
     
     class Meta:
         model = ProductSellInfo
