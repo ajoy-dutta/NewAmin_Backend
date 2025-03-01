@@ -11,12 +11,17 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
         ]
 
 class PurchaseDetailSerializer(serializers.ModelSerializer):
+    bag_quantity = serializers.IntegerField( read_only=True)
+    weight = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
     class Meta:
         model = PurchaseDetail
         fields = [
             "product",
             "warehouse",
             "lot_number",
+            "purchased_bag_quantity",
+            "purchased_weight",
             "bag_quantity",
             "weight",
             "purchase_price",
@@ -50,6 +55,10 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 
 class ProductSellInfoSerializer(serializers.ModelSerializer):
+    
+    product_name = serializers.CharField(source="product.name", read_only=True)  
+    # godown_name = serializers.CharField(source="godown_name.godown_name", read_only=True) 
+    
     class Meta:
         model = ProductSellInfo
         fields = '__all__'
