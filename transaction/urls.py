@@ -21,6 +21,4 @@ urlpatterns = [
     path("bank-income/", BankIncomeCostListCreateView.as_view(), name="bank-income-list"),
     path("bank-cost/<int:pk>/", BankIncomeCostUpdateView.as_view(), name="bank-income-details"),
 
-
-
 ]
