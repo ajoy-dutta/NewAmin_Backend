@@ -5,7 +5,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework.exceptions import AuthenticationFailed
-
+from django.contrib.auth import password_validation
+import json
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
@@ -35,11 +36,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-
-class StaffApproveSerializer(serializers.ModelSerializer):    
+class StaffApproveSerializer(serializers.ModelSerializer):
     class Meta:
-        model=get_user_model()
-        fields=('id','username','email','is_approved','role','phone')
+        model = User
+        fields = ["id", "username", "email", "role", "is_approved", "phone", "profile_picture"]
+        # read_only_fields = ["id", "username", "email", "role"]  # Prevent modification of certain fields
+
+    def update(self, instance, validated_data):
+        """Ensure 'is_approved' is updated properly"""
+        is_approved = validated_data.get("is_approved", instance.is_approved)
+
+        if isinstance(is_approved, str):  # Handle "true"/"false" as string input
+            is_approved = is_approved.lower() == "true"
+
+        instance.is_approved = is_approved
+        instance.save()
+        return instance
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -51,35 +63,47 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise AuthenticationFailed("Your account has not been approved yet.")
 
         return data
+        
+class PasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
 
-# class PasswordChangeSerializer(serializers.Serializer):
-#     current_password = serializers.CharField(required=True)
-#     new_password = serializers.CharField(required=True)
-#     confirm_new_password = serializers.CharField(required=True)
+    def validate(self, data):
+        user = self.context['request'].user  # Get the logged-in user
+        print(f"Stored password hash: {user.password}")  # Log the stored password hash
 
-#     def validate(self, data):
-#         user = self.context['request'].user
+        print(f"User: {user.username}, Current Password: {data['current_password']}")
+        if isinstance(data, str):
+                data = json.loads(data)  
+        # Ensure the user is authenticated before checking password
+        if not user.is_authenticated:
+            raise serializers.ValidationError({"detail": "Authentication is required to change the password."})
 
-#         # Validate current password
-#         if not check_password(data['current_password'], user.password):
-#             raise serializers.ValidationError({"current_password": "Current password is incorrect"})
+        # Check if current password is correct
+        if not user.check_password(data['current_password']):
+            raise serializers.ValidationError({"current_password": "Current password is incorrect."})
 
-#         # Validate new password and confirmation match
-#         if data['new_password'] != data['confirm_new_password']:
-#             raise serializers.ValidationError({"new_password": "New passwords do not match"})
+        # Ensure the new password is not the same as the current password
+        if data['current_password'] == data['new_password']:
+            raise serializers.ValidationError({"new_password": "New password cannot be the same as the current password."})
 
-#         # Validate password complexity
-#         try:
-#             validate_password(data['new_password'], user=user)
-#         except serializers.ValidationError as e:
-#             raise serializers.ValidationError({"new_password": e.messages})
+        # Validate the new password using Django's built-in validators
+        try:
+            password_validation.validate_password(data['new_password'], user=user)
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError({"new_password": e.messages})
 
-#         return data
-    
-# class UserProfileSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'username', 'email', 'role', 'is_approved', 'profile_picture']
+        return data
+
+    def save(self):
+        user = self.context['request'].user  # Get the logged-in user
+        user.set_password(self.validated_data['new_password'])  # Set the new password
+        user.save()  # Save the user with the new password
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'role', 'is_approved', 'profile_picture','phone']
         
 class BankInfoSerializer(serializers.ModelSerializer):
     class Meta:

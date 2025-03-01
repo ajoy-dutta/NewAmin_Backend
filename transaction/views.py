@@ -9,9 +9,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAdminUser
 
 # Create your views here.
 class PurchaseListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     parser_classes = [MultiPartParser, FormParser]  
@@ -60,6 +64,8 @@ class PurchaseListCreateView(generics.ListCreateAPIView):
 
 
 class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
+
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
 
@@ -125,11 +131,15 @@ class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     
     
 class SellListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = Sell.objects.all()
     serializer_class = SellSerializer
    
 
 class SellRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
+
     queryset = Sell.objects.all()
     serializer_class = SellSerializer
     
@@ -137,19 +147,24 @@ class SellRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     
     
 class PaymentRecieveListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = PaymentRecieve.objects.all()
     serializer_class = PaymentRecieveSerializer
 
 class PaymentRecieveRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = PaymentRecieve.objects.all()
     serializer_class = PaymentRecieveSerializer
 
 class PaymentListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     
 
 class InvoiceListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Invoice.objects.all() 
     serializer_class = InvoiceSerializer
     

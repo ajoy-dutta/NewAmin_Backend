@@ -17,6 +17,7 @@ class Purchase(models.Model):
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'), ('বেপারী/চাষী', 'বেপারী/চাষী')]) 
     buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="purchases")
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    advance_payment = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null = True)
 
     def update_total_amount(self):
         """ Updates total_amount by summing all related PurchaseDetails """
@@ -49,6 +50,9 @@ class PurchaseDetail(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product")
     warehouse = models.CharField(max_length=255, blank=True, null=True)
     lot_number = models.CharField(max_length=100, blank=True, null=True)
+    
+    purchased_bag_quantity = models.IntegerField(blank=True, null = True)
+    purchased_weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null = True)
 
     bag_quantity = models.IntegerField()
     weight = models.DecimalField(max_digits=10, decimal_places=2)
@@ -60,11 +64,14 @@ class PurchaseDetail(models.Model):
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
+        
+        if not self.pk:
+            if self.purchased_bag_quantity is not None and self.purchased_weight is not None:
+                self.bag_quantity = self.purchased_bag_quantity
+                self.weight = self.purchased_weight
 
         if not self.lot_number:
-            # Use the purchase date if available; otherwise, use today's date.
             if self.purchase and self.purchase.date:
-                # If self.purchase.date is a datetime, extract the date portion:
                 date_obj = self.purchase.date.date() if hasattr(self.purchase.date, 'date') else self.purchase.date
                 date_str = date_obj.strftime('%d%m%y')
             else:
