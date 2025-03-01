@@ -294,3 +294,21 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice for {self.product_name} ({self.date})"
+
+
+        from django.db import models
+
+class BankIncomeCost(models.Model):
+    TRANSACTION_CHOICES = [
+        ("জমা", "জমা"),  # Deposit
+        ("খরচ", "খরচ")   # Expense
+    ]
+
+    transaction_type = models.CharField(max_length=100, choices=TRANSACTION_CHOICES)
+    bank_name = models.CharField(max_length=255) 
+    description = models.TextField(blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField(default=now)
+    def __str__(self):
+        return f"{self.transaction_type} - {self.amount} ({self.bank_name})"
+

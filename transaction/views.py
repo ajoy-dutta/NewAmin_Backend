@@ -172,3 +172,12 @@ class InvoiceListCreateView(generics.ListCreateAPIView):
 class InvoiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Invoice.objects.all() 
     serializer_class = InvoiceSerializer
+
+
+class BankIncomeCostListCreateView(generics.ListCreateAPIView):
+    queryset = BankIncomeCost.objects.all().order_by("-date")  # Show newest first
+    serializer_class = BankIncomeCostSerializer
+
+class BankIncomeCostUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BankIncomeCost.objects.all()
+    serializer_class = BankIncomeCostSerializer
