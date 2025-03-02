@@ -29,6 +29,7 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
             "sale_price",
             "commission",
             "total_amount",
+            'exist',
         ]
 
 class PurchaseSerializer(serializers.ModelSerializer):
