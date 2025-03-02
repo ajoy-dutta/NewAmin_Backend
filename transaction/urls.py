@@ -17,7 +17,8 @@ urlpatterns = [
     
     path('invoices/', InvoiceListCreateView.as_view(), name='invoice'),
     path('invoices/<int:pk>/', InvoiceRetrieveUpdateDestroyView.as_view(), name='invoice-detail'),
-
-
+    
+    
+    path('product-transfer/', GodownTransferView.as_view(), name = 'GodownTransferView'),
 
 ]

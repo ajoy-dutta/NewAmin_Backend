@@ -276,12 +276,13 @@ class PaymentDetail(models.Model):
 
  
 class Invoice(models.Model):
-    # Translated field names for clarity
     date = models.DateField()
     product_name = models.CharField(max_length=255)
     bereft = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='invoices')
     godown_name = models.CharField(max_length=255)
     lot_number = models.CharField(max_length=255)
+    purchased_bag_quantity = models.IntegerField(default=0, blank= True, null =True)
+    purchased_weight = models.DecimalField(max_digits=10, decimal_places=2, blank= True, null =True)
     advance = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     payment_due = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     labor_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -291,6 +292,22 @@ class Invoice(models.Model):
     station_expense = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     other_cost_1 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     other_cost_2 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    invoice_no = models.CharField(max_length=255,blank= True, null =True)
+    
+    
+    def save(self, *args, **kwargs):
+        if not self.invoice_no:
+            last_invoice = Invoice.objects.filter(invoice_no__startswith="SC").order_by('-invoice_no').first()
+            if last_invoice:
+                try:
+                    last_number = int(last_invoice.invoice_no[2:])
+                    self.invoice_no = f"SC{last_number + 1:07}"
+                except ValueError:
+                    raise ValueError(f"Invalid receipt format: {last_invoice.invoice_no}")
+            else:
+                self.invoice_no = "SC0000001"
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Invoice for {self.product_name} ({self.date})"

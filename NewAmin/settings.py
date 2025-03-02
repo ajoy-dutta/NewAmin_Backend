@@ -94,9 +94,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     # Uncomment below if you want to enforce authentication for all views
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 # Database configuration
@@ -105,6 +105,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=100),  # Adjust this time as necessary
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=365),  # Longer lifespan for refresh tokens
 }
 
 # Password validation
