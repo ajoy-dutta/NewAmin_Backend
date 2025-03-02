@@ -223,3 +223,12 @@ class GodownTransferView(generics.GenericAPIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BankIncomeCostListCreateView(generics.ListCreateAPIView):
+    queryset = BankIncomeCost.objects.all().order_by("-date")  # Show newest first
+    serializer_class = BankIncomeCostSerializer
+
+class BankIncomeCostUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BankIncomeCost.objects.all()
+    serializer_class = BankIncomeCostSerializer
