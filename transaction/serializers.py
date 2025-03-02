@@ -198,6 +198,31 @@ class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invoice
         fields = '__all__'
+        
+    
+    def validate_lot_number(self, value):
+        lot_number = value
+        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number)
+
+        purchase_details.update(exist=False)
+        return value 
+    
+    def create(self, validated_data):
+        lot_number = validated_data.get('lot_number')
+        
+        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number)
+        purchase_details.update(exist=False)
+        
+        return super().create(validated_data)
+    
+    def update(self, instance, validate_data):
+        lot_number = validate_data.get('lot_number')
+        
+        purchase_details = PurchaseDetail.objects.filter(lot_number = lot_number)
+        purchase_details.update(exist = False)
+        
+        return super().update(instance, validate_data)
+    
 
 class BankIncomeCostSerializer(serializers.ModelSerializer):
     class Meta:

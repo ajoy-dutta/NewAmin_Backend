@@ -62,6 +62,7 @@ class PurchaseDetail(models.Model):
     sale_price = models.DecimalField(max_digits=10, decimal_places=2,blank=True, null=True)
     commission = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    exist = models.BooleanField(default=True, blank= True, null = True)
 
     def save(self, *args, **kwargs):
         
