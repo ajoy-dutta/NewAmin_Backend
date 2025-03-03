@@ -198,3 +198,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invoice
         fields = '__all__'
+
+class BankIncomeCostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankIncomeCost
+        fields = '__all__'
