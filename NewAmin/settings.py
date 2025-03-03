@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
-from datetime import timedelta
-
+from datetime import timedelta 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -128,6 +127,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=100),  
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),     
+}
 
 # Internationalization settings
 LANGUAGE_CODE = 'en-us'

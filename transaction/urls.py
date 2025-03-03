@@ -17,10 +17,12 @@ urlpatterns = [
     
     path('invoices/', InvoiceListCreateView.as_view(), name='invoice'),
     path('invoices/<int:pk>/', InvoiceRetrieveUpdateDestroyView.as_view(), name='invoice-detail'),
+    
+    
+    path('product-transfer/', GodownTransferView.as_view(), name = 'GodownTransferView'),
 
     path("bank-income/", BankIncomeCostListCreateView.as_view(), name="bank-income-list"),
-    path("bank-cost/<int:pk>/", BankIncomeCostUpdateView.as_view(), name="bank-income-details"),
-
-
+    # path("bank-cost/<int:pk>/", BankIncomeCostUpdateView.as_view(), name="bank-income-details"),
+     path("bank-income/<int:pk>/", BankIncomeCostUpdateView.as_view(), name="bank-income-detail"),  # ✅ FIXED: Get one, update, DELETE
 
 ]
