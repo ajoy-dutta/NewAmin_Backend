@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from store.models import *
 
 class TransactionDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,6 +29,7 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
             "sale_price",
             "commission",
             "total_amount",
+            'exist',
         ]
 
 class PurchaseSerializer(serializers.ModelSerializer):
@@ -55,9 +57,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 
 class ProductSellInfoSerializer(serializers.ModelSerializer):
-    
-    product_name = serializers.CharField(source="product.name", read_only=True)  
-    # godown_name = serializers.CharField(source="godown_name.godown_name", read_only=True) 
+    product_name = serializers.CharField(source="product.name", read_only=True) 
+    godown = serializers.CharField(source="godown_name.godown_name", read_only = True)  
     
     class Meta:
         model = ProductSellInfo
@@ -99,6 +100,7 @@ class SellSerializer(serializers.ModelSerializer):
 
         # Create ProductSellInfo records and adjust Purchase quantities
         for product in product_sell_data:
+            print(product)
             product_sell_info = ProductSellInfo.objects.create(sell=sell, **product)
 
             lot_number = product_sell_info.lot_number
@@ -145,7 +147,6 @@ class SellSerializer(serializers.ModelSerializer):
 
         return instance
 
-    
     
 class PaymentRecieveSerializer(serializers.ModelSerializer):
     buyer_name = serializers.CharField(source='buyer.name', read_only=True)
@@ -196,4 +197,34 @@ class InvoiceSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Invoice
+        fields = '__all__'
+        
+    
+    def validate_lot_number(self, value):
+        lot_number = value
+        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number)
+
+        purchase_details.update(exist=False)
+        return value 
+    
+    def create(self, validated_data):
+        lot_number = validated_data.get('lot_number')
+        
+        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number)
+        purchase_details.update(exist=False)
+        
+        return super().create(validated_data)
+    
+    def update(self, instance, validate_data):
+        lot_number = validate_data.get('lot_number')
+        
+        purchase_details = PurchaseDetail.objects.filter(lot_number = lot_number)
+        purchase_details.update(exist = False)
+        
+        return super().update(instance, validate_data)
+    
+
+class BankIncomeCostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankIncomeCost
         fields = '__all__'
