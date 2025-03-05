@@ -228,7 +228,9 @@ class GodownTransferView(generics.GenericAPIView):
 class BankIncomeCostListCreateView(generics.ListCreateAPIView):
     queryset = BankIncomeCost.objects.all().order_by("-date")  # Show newest first
     serializer_class = BankIncomeCostSerializer
-
+# ///new add 
 class BankIncomeCostUpdateView(generics.RetrieveUpdateDestroyAPIView):
     queryset = BankIncomeCost.objects.all()
     serializer_class = BankIncomeCostSerializer
+  
+
