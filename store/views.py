@@ -10,8 +10,8 @@ from django.contrib.auth import authenticate
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAdminUser
 
 # Login View
 class LoginAPIView(APIView):
@@ -38,12 +38,14 @@ class LoginAPIView(APIView):
 
 # Division Views
 class DivisionListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Division.objects.all()
     serializer_class = DivisionSerializer
     permission_classes = [IsAuthenticated]
 
 
 class DivisionRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Division.objects.all()
     serializer_class = DivisionSerializer
     permission_classes = [IsAuthenticated]
@@ -51,12 +53,14 @@ class DivisionRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # District Views
 class DistrictListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
     permission_classes = [IsAuthenticated]
 
 
 class DistrictRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
     permission_classes = [IsAuthenticated]
@@ -64,12 +68,14 @@ class DistrictRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # Thana Views
 class ThanaListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Thana.objects.all()
     serializer_class = ThanaSerializer
     permission_classes = [IsAuthenticated]
 
 
 class ThanaRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Thana.objects.all()
     serializer_class = ThanaSerializer
     permission_classes = [IsAuthenticated]
@@ -77,12 +83,14 @@ class ThanaRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # Area Views
 class AreaListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Area.objects.all()
     serializer_class = AreaSerializer
     permission_classes = [IsAuthenticated]
 
 
 class AreaRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Area.objects.all()
     serializer_class = AreaSerializer
     permission_classes = [IsAuthenticated]
@@ -90,12 +98,14 @@ class AreaRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # Route Views
 class RouteListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     permission_classes = [IsAuthenticated]
 
 
 class RouteRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     permission_classes = [IsAuthenticated]
@@ -103,12 +113,14 @@ class RouteRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # Godown Views
 class GodownListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = GodownList.objects.all()
     serializer_class = GodownListSerializer
     permission_classes = [IsAuthenticated]
 
 
 class GodownListRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = GodownList.objects.all()
     serializer_class = GodownListSerializer
     permission_classes = [IsAuthenticated]
@@ -116,12 +128,14 @@ class GodownListRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # Shop Bank Info Views
 class ShopBankInfoListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = ShopBankInfo.objects.all()
     serializer_class = ShopBankInfoSerializer
     permission_classes = [IsAuthenticated]
 
 
 class ShopBankInfoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = ShopBankInfo.objects.all()
     serializer_class = ShopBankInfoSerializer
     permission_classes = [IsAuthenticated]
@@ -144,12 +158,14 @@ class BankMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # Cost Method Views
 class CostMethodListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Cost.objects.all()
     serializer_class = CostMethodSerializer
     permission_classes = [IsAuthenticated]
 
 
 class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Cost.objects.all()
     serializer_class = CostMethodSerializer
     permission_classes = [IsAuthenticated]
@@ -157,6 +173,7 @@ class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # Employee Views
 class EmployeeListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Employee.objects.all().prefetch_related('education', 'experiences', 'banking_details')
     serializer_class = EmployeeSerializer
     parser_classes = [MultiPartParser, FormParser]
@@ -192,6 +209,7 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
 
 
 class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
     permission_classes = [IsAuthenticated]
@@ -230,12 +248,14 @@ class EmployeeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 # Product Views
 class ProductListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
 
 
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]

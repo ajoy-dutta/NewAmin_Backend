@@ -56,12 +56,16 @@ class PurchaseDetail(models.Model):
 
     bag_quantity = models.IntegerField()
     weight = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    total_sell_bag = models.IntegerField(default=0, blank=True, null = True)
+    total_sell_weight = models.DecimalField(default=Decimal('0.00'),max_digits=10, decimal_places=2, blank=True, null = True)
 
     
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2,blank=True, null=True)
     commission = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    exist = models.BooleanField(default=True, blank= True, null = True)
 
     def save(self, *args, **kwargs):
         
@@ -146,7 +150,7 @@ class ProductSellInfo(models.Model):
     sell = models.ForeignKey(Sell, on_delete=models.CASCADE, related_name="Product_sell_info")
     product = models.ForeignKey(Product, on_delete=models.CASCADE,blank=True, null= True, related_name="Product" )
     bereft_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="bereft_name")
-    godown_name = models.ForeignKey(GodownList, on_delete=models.CASCADE, related_name="GodownList")
+    godown_name = models.ForeignKey(GodownList, on_delete=models.CASCADE, related_name="warehouse_name",blank=True, null= True)
     lot_number = models.CharField(max_length=50)
     bag_quantity = models.IntegerField(default=0)
     weight = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -276,12 +280,13 @@ class PaymentDetail(models.Model):
 
  
 class Invoice(models.Model):
-    # Translated field names for clarity
     date = models.DateField()
     product_name = models.CharField(max_length=255)
     bereft = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='invoices')
     godown_name = models.CharField(max_length=255)
     lot_number = models.CharField(max_length=255)
+    purchased_bag_quantity = models.IntegerField(default=0, blank= True, null =True)
+    purchased_weight = models.DecimalField(max_digits=10, decimal_places=2, blank= True, null =True)
     advance = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     payment_due = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     labor_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -291,6 +296,40 @@ class Invoice(models.Model):
     station_expense = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     other_cost_1 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     other_cost_2 = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    invoice_no = models.CharField(max_length=255,blank= True, null =True)
+    
+    
+    def save(self, *args, **kwargs):
+        if not self.invoice_no:
+            last_invoice = Invoice.objects.filter(invoice_no__startswith="SC").order_by('-invoice_no').first()
+            if last_invoice:
+                try:
+                    last_number = int(last_invoice.invoice_no[2:])
+                    self.invoice_no = f"SC{last_number + 1:07}"
+                except ValueError:
+                    raise ValueError(f"Invalid receipt format: {last_invoice.invoice_no}")
+            else:
+                self.invoice_no = "SC0000001"
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Invoice for {self.product_name} ({self.date})"
+
+
+        from django.db import models
+
+class BankIncomeCost(models.Model):
+    TRANSACTION_CHOICES = [
+        ("জমা", "জমা"),  # Deposit
+        ("খরচ", "খরচ")   # Expense
+    ]
+
+    transaction_type = models.CharField(max_length=100, choices=TRANSACTION_CHOICES)
+    bank_name = models.CharField(max_length=255) 
+    description = models.TextField(blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField(default=now)
+    def __str__(self):
+        return f"{self.transaction_type} - {self.amount} ({self.bank_name})"
+

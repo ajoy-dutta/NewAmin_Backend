@@ -9,9 +9,14 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAdminUser
+from django.db import transaction
 
 # Create your views here.
 class PurchaseListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     parser_classes = [MultiPartParser, FormParser]  
@@ -60,6 +65,8 @@ class PurchaseListCreateView(generics.ListCreateAPIView):
 
 
 class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
+
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
 
@@ -125,11 +132,15 @@ class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     
     
 class SellListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = Sell.objects.all()
     serializer_class = SellSerializer
    
 
 class SellRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
+
     queryset = Sell.objects.all()
     serializer_class = SellSerializer
     
@@ -137,19 +148,24 @@ class SellRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     
     
 class PaymentRecieveListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = PaymentRecieve.objects.all()
     serializer_class = PaymentRecieveSerializer
 
 class PaymentRecieveRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = PaymentRecieve.objects.all()
     serializer_class = PaymentRecieveSerializer
 
 class PaymentListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     
 
 class InvoiceListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Invoice.objects.all() 
     serializer_class = InvoiceSerializer
     
@@ -157,3 +173,64 @@ class InvoiceListCreateView(generics.ListCreateAPIView):
 class InvoiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Invoice.objects.all() 
     serializer_class = InvoiceSerializer
+    
+    
+    
+class GodownTransferView(generics.GenericAPIView):
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # Extract data from request
+            source_godown_id = request.data.get("fromGodown")
+            target_godown_id = request.data.get("toGodown")
+            product_id = request.data.get("product")
+            transfer_bag_quantity = request.data.get("movedBagQuantity")
+            transfer_kg_quantity = request.data.get("movedKgQuantity")
+            lot_number = request.data.get("lotNumber")
+
+            source_record = PurchaseDetail.objects.get(warehouse=source_godown_id, product_id=product_id, lot_number=lot_number)
+
+            with transaction.atomic():  # Ensures atomicity of transfer
+                
+                transfer_bag_quantity = Decimal(str(transfer_bag_quantity))
+                transfer_kg_quantity = Decimal(str(transfer_kg_quantity))
+                
+                purchase_obj = source_record.purchase  
+
+                source_record.bag_quantity -= transfer_bag_quantity
+                source_record.weight -= transfer_kg_quantity
+                source_record.save()
+
+                # Add stock to target godown (create if not exists)
+                target_record, created = PurchaseDetail.objects.get_or_create(
+                    warehouse=target_godown_id,
+                    product_id=product_id,
+                    lot_number=lot_number,
+                    purchase=purchase_obj, 
+                    defaults={
+                        "bag_quantity": 0,
+                        "weight": 0,
+                        "purchase_price": source_record.purchase_price
+                    }
+                )
+
+                # Increase stock in target godown
+                target_record.bag_quantity += transfer_bag_quantity
+                target_record.weight += transfer_kg_quantity
+                target_record.save()
+
+                return Response({"message": "Product transferred successfully!"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BankIncomeCostListCreateView(generics.ListCreateAPIView):
+    queryset = BankIncomeCost.objects.all().order_by("-date")  # Show newest first
+    serializer_class = BankIncomeCostSerializer
+# ///new add 
+class BankIncomeCostUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BankIncomeCost.objects.all()
+    serializer_class = BankIncomeCostSerializer
+  
+

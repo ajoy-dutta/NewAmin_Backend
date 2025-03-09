@@ -13,6 +13,7 @@ admin.site.register(IncomeInfo)
 admin.site.register(Payment)
 admin.site.register(PaymentDetail)
 admin.site.register(Invoice)
+admin.site.register(BankIncomeCost)
 
 
 

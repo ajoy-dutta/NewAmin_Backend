@@ -28,12 +28,9 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'admin'
 
-# class IsAdminOrAuthenticated(BasePermission):
-#     def has_permission(self, request, view):
-#         # Allow access if user is authenticated or has admin role
-#         return request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
-
 class UserRegistrationView(ListCreateAPIView):
+    permission_classes = [AllowAny]
+
     queryset = User.objects.all()  # Replace `User` with your model name
     serializer_class = UserRegistrationSerializer
 
@@ -50,10 +47,14 @@ class UserRegistrationView(ListCreateAPIView):
 
 
 class StaffListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = User.objects.all()
     serializer_class = StaffApproveSerializer
 
 class StaffApproveView(generics.RetrieveUpdateDestroyAPIView):  # GET, PUT, DELETE
+    permission_classes = [IsAdmin]
+
     queryset = User.objects.all()
     serializer_class = StaffApproveSerializer
     # lookup_field = "id"  # Users will be accessed using their ID
@@ -93,7 +94,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 class UserProfileView(APIView):
-    # permission_classes = [IsAuthenticated]  
+    permission_classes = [IsAuthenticated]  
     
     def get(self, request):
         if request.user.is_authenticated:
@@ -123,6 +124,8 @@ class PasswordChangeView(APIView):
         return Response(serializer.errors, status=400)  # Return 400 with error
 
 class MohajonListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = Mohajon.objects.all()
     serializer_class = MohajonSerializer
     parser_classes = [MultiPartParser, FormParser]  
@@ -153,6 +156,8 @@ class MohajonListCreateAPIView(generics.ListCreateAPIView):
 
 
 class MohajonDestroyUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdmin]
+
     queryset = Mohajon.objects.all()
     serializer_class = MohajonSerializer
 
@@ -187,11 +192,15 @@ class MohajonDestroyUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CustomerListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
 
 
 class CustomerDestroyUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdmin]
+
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
 
