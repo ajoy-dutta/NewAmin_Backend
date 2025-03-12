@@ -7,8 +7,6 @@ from store.models import Product, GodownList, ShopBankInfo, BankMethod,Employee
 from decimal import Decimal 
 from datetime import datetime
 
-
-
 # Create your models here
 
 class Purchase(models.Model):
