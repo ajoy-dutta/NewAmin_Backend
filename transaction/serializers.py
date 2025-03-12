@@ -192,7 +192,7 @@ class PaymentRecieveSerializer(serializers.ModelSerializer):
 
         return instance
     
-    
+
 
 class PaymentDetailSerializer(serializers.ModelSerializer):
     class Meta:
