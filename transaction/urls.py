@@ -22,6 +22,5 @@ urlpatterns = [
     path('product-transfer/', GodownTransferView.as_view(), name = 'GodownTransferView'),
 
     path("bank-income/", BankIncomeCostListCreateView.as_view(), name="bank-income-list"),
-    path("bank-cost/<int:pk>/", BankIncomeCostUpdateView.as_view(), name="bank-income-details"),
-
+    path("bank-income/<int:pk>/", BankIncomeCostUpdateView.as_view(), name="bank-income-detail"),  
 ]

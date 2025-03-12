@@ -94,9 +94,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     # Uncomment below if you want to enforce authentication for all views
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
 }
 
 # Database configuration
@@ -129,10 +129,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=100),  
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),     
-}
 
 # Internationalization settings
 LANGUAGE_CODE = 'en-us'

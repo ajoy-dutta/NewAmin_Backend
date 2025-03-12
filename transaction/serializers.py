@@ -14,6 +14,8 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
 class PurchaseDetailSerializer(serializers.ModelSerializer):
     bag_quantity = serializers.IntegerField( read_only=True)
     weight = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    total_sell_bag = serializers.IntegerField( read_only=True)
+    total_sell_weight = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = PurchaseDetail
@@ -25,6 +27,8 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
             "purchased_weight",
             "bag_quantity",
             "weight",
+            "total_sell_bag",
+            "total_sell_weight",
             "purchase_price",
             "sale_price",
             "commission",
@@ -95,31 +99,48 @@ class SellSerializer(serializers.ModelSerializer):
         product_sell_data = validated_data.pop('Product_sell_info', [])
         cost_info_data = validated_data.pop('Cost_info', [])
         income_info_data = validated_data.pop('Income_info', [])
+        total_price = 0 
+        total_income = 0
+        
 
         sell = Sell.objects.create(**validated_data)
 
         # Create ProductSellInfo records and adjust Purchase quantities
         for product in product_sell_data:
-            print(product)
             product_sell_info = ProductSellInfo.objects.create(sell=sell, **product)
+            total_price += product_sell_info.amount
 
             lot_number = product_sell_info.lot_number
+            godown = product_sell_info.godown_name
             try:
-                purchaseDetail = PurchaseDetail.objects.get(lot_number=lot_number)
+                purchaseDetail = PurchaseDetail.objects.get(lot_number=lot_number , warehouse=godown.godown_name)
                 purchaseDetail.bag_quantity -= product_sell_info.sale_bag_quantity
                 purchaseDetail.weight -= product_sell_info.sale_weight
+                purchaseDetail.total_sell_bag += product_sell_info.sale_bag_quantity
+                purchaseDetail.total_sell_weight += product_sell_info.sale_weight
                 if purchaseDetail.bag_quantity < 0 or purchaseDetail.weight < 0:
                     raise ValueError("Not enough inventory to complete the sale.")
                 purchaseDetail.save()
             except Purchase.DoesNotExist:
                 raise ValueError(f"No purchase record found for lot number {lot_number}")
+            
+        # Update customer's previous_account field
+        customer = sell.buyer
+        if customer.previous_account is None:
+            customer.previous_account = 0  # Ensure it's not None
+        customer.previous_account += total_price
+        customer.save()
 
 
         for cost in cost_info_data:
             CostInfo.objects.create(sell=sell, **cost)
 
         for income in income_info_data:
-            IncomeInfo.objects.create(sell=sell, **income)
+            income_info = IncomeInfo.objects.create(sell=sell, **income)
+            total_income += income_info.amount
+            
+        customer.previous_account -= total_income
+        customer.save()
 
         return sell
     
@@ -147,14 +168,31 @@ class SellSerializer(serializers.ModelSerializer):
 
         return instance
 
-
     
 class PaymentRecieveSerializer(serializers.ModelSerializer):
     buyer_name = serializers.CharField(source='buyer.name', read_only=True)
+    remaining_balance = serializers.SerializerMethodField()
 
     class Meta:
         model = PaymentRecieve
         fields = '__all__'
+
+    def get_remaining_balance(self, obj):
+        customer = Customer.objects.filter(id=obj.buyer_id).first()
+        previous_account = customer.previous_account if customer else 0
+        return previous_account - obj.amount
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        
+        customer = Customer.objects.filter(id=instance.buyer_id).first()
+        if customer:
+            customer.previous_account -= instance.amount
+            customer.save()
+
+        return instance
+    
+    
 
 class PaymentDetailSerializer(serializers.ModelSerializer):
     class Meta:
