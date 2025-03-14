@@ -74,11 +74,18 @@ class Mohajon(models.Model):
     total_payment = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # Total payments received
     total_purchases = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # Total purchases
     due_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)  # ✅ New Field
+    total_transaction_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+
+    def update_total_transaction_amount(self):
+            total_transactions = self.purchases.aggregate(total=Sum('total_transaction_amount'))['total'] or Decimal(0)
+            self.total_transaction_amount = total_transactions
+            self.save(update_fields=['total_transaction_amount'])
 
     def update_total_payment(self):
         """ Updates total_payment by summing all related PaymentDetails """
         total_payments = self.payment_details.aggregate(total=Sum('amount'))['total'] or Decimal(0)
-        self.total_payment = total_payments
+        total_advance = self.purchases.aggregate(total=Sum('advance_payment'))['total'] or Decimal(0)
+        self.total_payment = total_payments + total_advance
         self.save(update_fields=['total_payment'])
         self.update_due_amount()  # ✅ Update due_amount after updating payments
 
@@ -90,10 +97,23 @@ class Mohajon(models.Model):
         self.update_due_amount()  # ✅ Update due_amount after updating purchases
 
     def update_due_amount(self):
-        """ Calculates due_amount = previous_account + total_purchases - total_payment """
-        self.due_amount = (self.previous_account or Decimal(0)) + self.total_purchases - self.total_payment
+        if self.business_type == "বেপারী/চাষী":
+            # ✅ Include total_transaction_amount in due calculation
+            self.due_amount = (
+                (self.previous_account or Decimal(0)) +
+                self.total_purchases -
+                self.total_payment +
+                self.total_transaction_amount  # ✅ Added total_transaction_amount
+            )
+        else:
+            # For মহাজন, calculate due without total_transaction_amount
+            self.due_amount = (
+                (self.previous_account or Decimal(0)) +
+                self.total_purchases -
+                self.total_payment
+            )
+
         self.save(update_fields=['due_amount'])
-    
         
     def save(self, *args, **kwargs):
         if not self.code:

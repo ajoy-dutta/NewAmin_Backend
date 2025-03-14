@@ -7,8 +7,6 @@ from store.models import Product, GodownList, ShopBankInfo, BankMethod,Employee
 from decimal import Decimal 
 from datetime import datetime
 
-
-
 # Create your models here
 
 class Purchase(models.Model):
@@ -17,13 +15,20 @@ class Purchase(models.Model):
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'), ('বেপারী/চাষী', 'বেপারী/চাষী')]) 
     buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="purchases")
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    advance_payment = models.DecimalField(default=Decimal('0.00'),max_digits=15, decimal_places=2, blank=True, null = True)
+    advance_payment = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null = True)
+    total_transaction_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
 
     def update_total_amount(self):
         """ Updates total_amount by summing all related PurchaseDetails """
         total = self.purchase_details.aggregate(total=Sum('total_amount'))['total'] or Decimal(0)
         self.total_amount = total
         self.save(update_fields=['total_amount'])
+
+    def update_total_transaction_amount(self):
+        """ Updates total_transaction_amount by summing all related TransactionDetails """
+        total_transactions = self.transaction_details.aggregate(total=Sum('additional_cost_amount'))['total'] or Decimal(0)
+        self.total_transaction_amount = total_transactions
+        self.save(update_fields=['total_transaction_amount'])
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:
@@ -33,6 +38,9 @@ class Purchase(models.Model):
 
         super(Purchase, self).save(*args, **kwargs)
         self.buyer_name.update_total_purchases()
+        self.buyer_name.update_total_payment() 
+        self.buyer_name.update_total_transaction_amount()
+
 
     def delete(self, *args, **kwargs):
         """ Ensure total_purchases updates when a Purchase is deleted """
@@ -41,6 +49,8 @@ class Purchase(models.Model):
 
         super().delete(*args, **kwargs)
         buyer.update_total_purchases()
+        buyer.update_total_payment() 
+        buyer.update_total_transaction_amount()
 
     def __str__(self):
         return f"Receipt {self.receipt_number} ({self.date})"
@@ -114,6 +124,15 @@ class TransactionDetail(models.Model):
     additional_cost_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     is_paid = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        super(TransactionDetail, self).save(*args, **kwargs)
+        self.purchase.update_total_transaction_amount()  # ✅ Update purchase transaction amount
+
+    def delete(self, *args, **kwargs):
+        purchase = self.purchase
+        super(TransactionDetail, self).delete(*args, **kwargs)
+        purchase.update_total_transaction_amount()  # ✅ Update purchase transaction amount after deletion
 
     def __str__(self):
         return f"{self.transaction_type} - {self.additional_cost_amount}"  # Fixed issue
