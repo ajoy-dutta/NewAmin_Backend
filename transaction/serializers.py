@@ -39,7 +39,7 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
 class PurchaseSerializer(serializers.ModelSerializer):
     transaction_details = TransactionDetailSerializer(many=True, required=False) 
     purchase_details = PurchaseDetailSerializer(many=True, required=False)  
-
+    bereft_name = serializers.CharField(source='buyer_name.name', read_only=True)
     class Meta:
         model = Purchase
         fields = '__all__'
@@ -241,6 +241,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     
     def validate_lot_number(self, value):
         lot_number = value
+        print(lot_number)
         purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number)
 
         purchase_details.update(exist=False)

@@ -17,7 +17,7 @@ class Purchase(models.Model):
     business_type = models.CharField(max_length=255, choices=[('মহাজন', 'মহাজন'), ('বেপারী/চাষী', 'বেপারী/চাষী')]) 
     buyer_name = models.ForeignKey(Mohajon, on_delete=models.CASCADE, related_name="purchases")
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    advance_payment = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null = True)
+    advance_payment = models.DecimalField(default=Decimal('0.00'),max_digits=15, decimal_places=2, blank=True, null = True)
 
     def update_total_amount(self):
         """ Updates total_amount by summing all related PurchaseDetails """
