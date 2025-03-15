@@ -101,6 +101,7 @@ class SellSerializer(serializers.ModelSerializer):
         income_info_data = validated_data.pop('Income_info', [])
         total_price = 0 
         total_income = 0
+        total_cost = 0
         
 
         sell = Sell.objects.create(**validated_data)
@@ -133,13 +134,15 @@ class SellSerializer(serializers.ModelSerializer):
 
 
         for cost in cost_info_data:
-            CostInfo.objects.create(sell=sell, **cost)
+            cost_info = CostInfo.objects.create(sell=sell, **cost)
+            total_cost += cost_info.amount
 
         for income in income_info_data:
             income_info = IncomeInfo.objects.create(sell=sell, **income)
             total_income += income_info.amount
             
         customer.previous_account -= total_income
+        customer.previous_account += total_cost
         customer.save()
 
         return sell
@@ -230,7 +233,9 @@ class PaymentSerializer(serializers.ModelSerializer):
                 PaymentDetail.objects.create(payment_header=instance, **detail_data)
         return instance
     
-    
+
+
+
 class InvoiceSerializer(serializers.ModelSerializer):
     bereft_name = serializers.CharField(source='bereft.name', read_only=True)
     
@@ -238,30 +243,43 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = '__all__'
         
-    
     def validate_lot_number(self, value):
+        # Only validate, don't modify database in validation
         lot_number = value
-        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number)
+        godown = self.initial_data.get('godown_name') 
+        
+        print(godown)
+        if godown:
+            godown_obj = GodownList.objects.filter(id=godown).first()
+            purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_obj.godown_name)
+            if purchase_details.exists():
+                return value
+        raise serializers.ValidationError("No purchase details found for this lot number and godown.")
 
-        purchase_details.update(exist=False)
-        return value 
-    
     def create(self, validated_data):
         lot_number = validated_data.get('lot_number')
+        godown = validated_data.get('godown_name')
         
-        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number)
-        purchase_details.update(exist=False)
+        godown_obj = GodownList.objects.filter(id=godown).first()
         
-        return super().create(validated_data)
+        if godown_obj:
+            purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_obj.godown_name)
+            purchase_details.update(exist=False) 
+            
+            return super().create(validated_data)
     
-    def update(self, instance, validate_data):
-        lot_number = validate_data.get('lot_number')
+    def update(self, instance, validated_data):
+        lot_number = validated_data.get('lot_number')
+        godown = validated_data.get('godown_name', instance.godown_name)
         
-        purchase_details = PurchaseDetail.objects.filter(lot_number = lot_number)
-        purchase_details.update(exist = False)
+        godown_obj = GodownList.objects.filter(id=godown).first()
         
-        return super().update(instance, validate_data)
-    
+        if godown_obj:
+        
+            purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_obj.godown_name)
+            purchase_details.update(exist=False)  
+            
+            return super().update(instance, validated_data)
 
 class BankIncomeCostSerializer(serializers.ModelSerializer):
     class Meta:
