@@ -246,31 +246,40 @@ class InvoiceSerializer(serializers.ModelSerializer):
     def validate_lot_number(self, value):
         # Only validate, don't modify database in validation
         lot_number = value
-        godown_name = self.initial_data.get('godown_name')  # Retrieve godown_name from incoming data
-        if godown_name:
-            purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_name)
+        godown = self.initial_data.get('godown_name') 
+        
+        print(godown)
+        if godown:
+            godown_obj = GodownList.objects.filter(id=godown).first()
+            purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_obj.godown_name)
             if purchase_details.exists():
                 return value
         raise serializers.ValidationError("No purchase details found for this lot number and godown.")
 
     def create(self, validated_data):
         lot_number = validated_data.get('lot_number')
-        godown_name = validated_data.get('godown_name')
+        godown = validated_data.get('godown_name')
         
-        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_name)
-        purchase_details.update(exist=False)  # No need to call save(), update modifies the db directly
+        godown_obj = GodownList.objects.filter(id=godown).first()
         
-        return super().create(validated_data)
+        if godown_obj:
+            purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_obj.godown_name)
+            purchase_details.update(exist=False) 
+            
+            return super().create(validated_data)
     
     def update(self, instance, validated_data):
         lot_number = validated_data.get('lot_number')
-        godown_name = validated_data.get('godown_name', instance.godown_name)
+        godown = validated_data.get('godown_name', instance.godown_name)
         
-        purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_name)
-        purchase_details.update(exist=False)  # No need to call save(), update modifies the db directly
+        godown_obj = GodownList.objects.filter(id=godown).first()
         
-        # Proceed with updating the Invoice
-        return super().update(instance, validated_data)
+        if godown_obj:
+        
+            purchase_details = PurchaseDetail.objects.filter(lot_number=lot_number, warehouse=godown_obj.godown_name)
+            purchase_details.update(exist=False)  
+            
+            return super().update(instance, validated_data)
 
 class BankIncomeCostSerializer(serializers.ModelSerializer):
     class Meta:
