@@ -62,6 +62,11 @@ class CostMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cost
         fields = ['id', 'name']
+    
+class DepositMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deposit
+        fields = '__all__'
         
         
 #Employee Info

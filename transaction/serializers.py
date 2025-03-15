@@ -173,7 +173,7 @@ class SellSerializer(serializers.ModelSerializer):
 
     
 class PaymentRecieveSerializer(serializers.ModelSerializer):
-    buyer_name = serializers.CharField(source='buyer.name', read_only=True)
+    buyer_name = serializers.CharField(source='buyer.name', read_only=True,required=False)
     remaining_balance = serializers.SerializerMethodField()
 
     class Meta:

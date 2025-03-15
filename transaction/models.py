@@ -217,7 +217,8 @@ class PaymentRecieve(models.Model):
     date = models.DateField(auto_now_add=True)  # Auto-generate the date
     receipt_number = models.CharField(max_length=50, unique=True, blank=True)  # Auto-generate
     voucher_number = models.CharField(max_length=50, blank=True, null=True)
-    buyer = models.ForeignKey(Customer,on_delete=models.CASCADE, related_name="buyer")  
+    deposit_type= models.CharField(max_length=255, blank=True, null=True)
+    buyer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="buyer", null=True, blank=True)
     paymentDescription = models.TextField(max_length=255,blank=True, null=True )
     payment_method = models.CharField(max_length=100, blank=True, null=True)
     bank_name = models.CharField(max_length=100, blank=True, null=True)
@@ -242,7 +243,8 @@ class PaymentRecieve(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Transaction {self.receipt_number} - {self.buyer_name}"
+        buyer_name = self.buyer.name if self.buyer else "No Buyer"
+        return f"Transaction {self.receipt_number} - {buyer_name}"
     
     
 

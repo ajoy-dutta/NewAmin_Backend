@@ -23,7 +23,9 @@ urlpatterns = [
     path('payment_method/<int:pk>/', BankMethodDetailView.as_view(), name='bank_method_detail'),
     path('cost_method/', CostMethodListCreateView.as_view(), name='cost_method_list_create'),
     path('cost_method/<int:pk>/', CostMethodDetailView.as_view(), name='cost_method_detail'),
-    
+    path('deposit_method/', DepositMethodListCreateView.as_view(), name='deposit_method_list_create'),
+    path('deposit_method/<int:pk>/', DepositMethodDetailView.as_view(), name='deposit_method_detail'),
+   
     # Employee endpoints
     path('employees/', EmployeeListCreateView.as_view(), name='employee-list-create'),
     path('employees/<int:pk>/', EmployeeRetrieveUpdateDestroyView.as_view(), name='employee-detail'),

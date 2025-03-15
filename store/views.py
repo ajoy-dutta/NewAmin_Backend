@@ -154,6 +154,17 @@ class CostMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Cost.objects.all()
     serializer_class = CostMethodSerializer
 
+class DepositMethodListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Deposit.objects.all()
+    serializer_class = DepositMethodSerializer
+
+
+class DepositMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Deposit.objects.all()
+    serializer_class = DepositMethodSerializer
+
 
 # Employee Views
 class EmployeeListCreateView(generics.ListCreateAPIView):
