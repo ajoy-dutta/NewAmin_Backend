@@ -20,6 +20,7 @@ class PurchaseListCreateView(generics.ListCreateAPIView):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     parser_classes = [MultiPartParser, FormParser]  
+    
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy() 
@@ -45,7 +46,8 @@ class PurchaseListCreateView(generics.ListCreateAPIView):
         return data
 
     def perform_create(self, serializer, data):
-        purchase = serializer.save()
+        user = self.request.user.username
+        purchase = serializer.save(user=user)
 
         for field, model in [
             ("transaction_details", TransactionDetail),
@@ -133,14 +135,17 @@ class PurchaseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     
 class SellListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-
     queryset = Sell.objects.all()
     serializer_class = SellSerializer
+    
+    def perform_create(self, serializer):
+        user = self.request.user.username 
+        serializer.save(user=user) 
+    
    
 
 class SellRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
-
     queryset = Sell.objects.all()
     serializer_class = SellSerializer
     
@@ -149,9 +154,13 @@ class SellRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     
 class PaymentRecieveListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-
     queryset = PaymentRecieve.objects.all()
     serializer_class = PaymentRecieveSerializer
+    
+    def perform_create(self, serializer):
+        user = self.request.user.username 
+        serializer.save(user=user) 
+    
 
 class PaymentRecieveRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
@@ -162,6 +171,10 @@ class PaymentListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    
+    def perform_create(self, serializer):
+        user = self.request.user.username 
+        serializer.save(user=user) 
     
 
 class InvoiceListCreateView(generics.ListCreateAPIView):

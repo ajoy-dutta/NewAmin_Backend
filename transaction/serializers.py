@@ -93,7 +93,7 @@ class SellSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Sell
-        fields = ['id', 'date', 'receipt_no','buyer','buyer_name','Product_sell_info', 'Cost_info', 'Income_info'] 
+        fields = ['id', 'date', 'receipt_no','buyer','buyer_name','user','Product_sell_info', 'Cost_info', 'Income_info'] 
         
     def create(self, validated_data):
         product_sell_data = validated_data.pop('Product_sell_info', [])
