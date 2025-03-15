@@ -17,6 +17,7 @@ class Purchase(models.Model):
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     advance_payment = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null = True)
     total_transaction_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    user = models.CharField(max_length=100, blank=True, null=True)
 
     def update_total_amount(self):
         """ Updates total_amount by summing all related PurchaseDetails """
@@ -143,6 +144,7 @@ class Sell(models.Model):
     date = models.DateField()
     receipt_no = models.CharField(max_length=50, unique=True, blank = True)
     buyer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="sell")
+    user = models.CharField(max_length=100, blank=True, null=True)
     
     
     def save(self, *args, **kwargs):
@@ -225,6 +227,7 @@ class PaymentRecieve(models.Model):
     cheque_number = models.CharField(max_length=50, blank=True, null=True)
     mobile_bank = models.CharField(max_length=100, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    user = models.CharField(max_length=100, blank=True, null=True)
    
     def save(self, *args, **kwargs):
         # Auto-generate receipt_number if not provided
@@ -250,6 +253,7 @@ class Payment(models.Model):
     date = models.DateField()
     voucher = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    user = models.CharField(max_length=100, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.code:
